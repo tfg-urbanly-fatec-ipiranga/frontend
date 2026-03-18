@@ -1,0 +1,248 @@
+.establishment-details-page {
+  min-height: 100vh;
+  background-color: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sans);
+  padding-bottom: 24px;
+}
+
+/* Header */
+.details-header {
+  background: white;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.details-header .brand-text {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.icon-button {
+  position: absolute;
+  background: white;
+  border: 1px solid #F3F4F6;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EB6B3D;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.back-button {
+  left: 20px;
+}
+
+.share-button {
+  right: 20px;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 20px;
+  position: relative;
+}
+
+.hero-image {
+  width: 100%;
+  aspect-ratio: 16 / 15;
+  object-fit: cover;
+  border-radius: 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.floating-favorite {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  background: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #EB6B3D;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Info Section */
+.info-section {
+  padding: 0 24px;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.establishment-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  flex: 1;
+}
+
+.status-badge {
+  background-color: #D1FAE5;
+  color: #059669;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.meta-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rating-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.rating-star {
+  color: #FBB03B;
+}
+
+.review-count {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.distance-text {
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+/* Category Tags */
+.tags-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.tag-pill {
+  background-color: #FFF2ED;
+  color: var(--accent);
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(240, 93, 36, 0.1);
+}
+
+/* Details Card */
+.details-card {
+  background: white;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+}
+
+.detail-group {
+  margin-bottom: 24px;
+}
+
+.detail-group:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #9BA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.hours-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.icon-circle {
+  width: 40px;
+  height: 40px;
+  background-color: #FFF2ED;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.about-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+  margin: 0;
+}
+
+/* Action Buttons */
+.actions-row {
+  display: flex;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.action-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: white;
+  border: 1.5px solid #F3F4F6;
+  padding: 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.action-button:active {
+  transform: scale(0.98);
+  background-color: #F9FAFB;
+}
+
+.action-icon {
+  color: #Eb6b3d;
+}

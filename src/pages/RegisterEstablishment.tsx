@@ -1,0 +1,242 @@
+import React, { useState, type FC, type FormEvent } from 'react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useCreatePlace } from '../hooks/useCreatePlace';
+import { useCategories } from '../hooks/useCategories';
+import './RegisterEstablishment.css';
+
+// Using the generated paths directly in the component for now
+// In a real app, these would be proper imports or URLs
+const PLACEHOLDER_IMAGES = [
+  '/coffee_shop_interior_1.png',
+  '/barista_making_coffee_1.png',
+  '/two_coffee_cups_on_table_1.png'
+];
+
+const RegisterEstablishment: FC = () => {
+  const navigate = useNavigate();
+  const { createPlace, loading: createLoading, error: createError } = useCreatePlace();
+  const { categories } = useCategories();
+  
+  // Basic Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    address: '',
+    city: '',
+    openingTime: '08:00',
+    closingTime: '18:00',
+    categoryId: '',
+  });
+
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável', 'Música', 'Rooftop'];
+
+  const toggleTag = (tag: string) => {
+    setActiveTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    // Format data for the backend DTO
+    const payload: any = {
+      ...formData,
+      // Provide dummy coordinates since map selection isn't implemented yet
+      latitude: -23.5505,
+      longitude: -46.6333,
+    };
+
+    if (!payload.categoryId || payload.categoryId === '') {
+      delete payload.categoryId; // Protect the backend expecting either valid UUID or omitted
+    }
+
+    const createdPlace = await createPlace(payload);
+    
+    if (createdPlace) {
+      alert('Estabelecimento cadastrado com sucesso!');
+      navigate(`/establishment/${createdPlace.id}`);
+    }
+  };
+
+  return (
+    <div className="register-establishment-page">
+      <header className="establishment-header">
+        <button className="back-button" type="button" onClick={() => navigate('/home')}>
+          <ArrowLeft size={24} />
+        </button>
+        <h1 className="header-title">Urbanly</h1>
+      </header>
+
+      <main className="establishment-card">
+        <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label">Nome</label>
+          <div className="input-container">
+            <Building2 size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              placeholder="Insira o nome do estabelecimento" 
+              className="input-element" 
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Descrição</label>
+          <textarea 
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            placeholder="Descreva o local" 
+            className="textarea-element"
+            rows={3}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Endereço</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="Insira o endereço" 
+              className="input-element" 
+            />
+          </div>
+        </div>
+        
+        <div className="form-group">
+          <label className="form-label">Cidade</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              placeholder="Insira a cidade" 
+              className="input-element" 
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Abre às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time" 
+                name="openingTime"
+                value={formData.openingTime}
+                onChange={handleInputChange}
+                required
+                className="input-element" 
+              />
+            </div>
+          </div>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Fecha às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time" 
+                name="closingTime"
+                value={formData.closingTime}
+                onChange={handleInputChange}
+                required
+                className="input-element" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Categoria</label>
+          <div className="select-container">
+            <Coffee size={20} className="input-icon" />
+            <select 
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleInputChange}
+              className="select-element"
+            >
+              <option value="">Selecione uma categoria (opcional)</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={20} className="chevron-icon" />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Palavras-chave / Tags</label>
+          <div className="tags-section">
+            {tags.map(tag => (
+              <span 
+                key={tag} 
+                className={`tag ${activeTags.includes(tag) ? 'tag-active' : 'tag-inactive'}`}
+                onClick={() => toggleTag(tag)}
+              >
+                {tag}
+              </span>
+            ))}
+            <button type="button" className="add-tag-button">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Galeria de fotos</label>
+          <div className="gallery-grid">
+            <div className="gallery-item">
+              <img src={PLACEHOLDER_IMAGES[0]} alt="Gallery 1" className="gallery-image" />
+            </div>
+            <div className="gallery-item">
+              <img src={PLACEHOLDER_IMAGES[1]} alt="Gallery 2" className="gallery-image" />
+            </div>
+            <div className="gallery-item">
+              <img src={PLACEHOLDER_IMAGES[2]} alt="Gallery 3" className="gallery-image" />
+            </div>
+            <button type="button" className="add-photo-button" onClick={() => alert('Galeria em construção')}>
+              <Plus size={24} />
+            </button>
+          </div>
+        </div>
+
+        {createError && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>Erro: {createError}</div>}
+
+        <button type="submit" className="register-button" disabled={createLoading}>
+          {createLoading ? 'Registrando...' : 'Registrar'} <ArrowRight size={20} />
+        </button>
+
+        <p className="footer-link-text">
+          Estes dados serão salvos no banco Urbanly.
+        </p>
+        
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default RegisterEstablishment;

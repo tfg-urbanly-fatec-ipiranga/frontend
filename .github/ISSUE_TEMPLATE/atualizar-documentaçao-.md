@@ -1,5 +1,5 @@
 ---
-name: 'Atualizar documentaçao '
+name: Atualizar documentação
 about: Checklist de atualização de documentação
 title: ''
 labels: documentation
@@ -8,8 +8,8 @@ type: Task
 
 ---
 
-[ ] Diagrama de classes
-[ ] Plano de testes
-[ ] Requisitos
-[ ] MER
-[ ] Especificação de casos de uso
+- [ ] Diagrama de classes
+- [ ] Plano de testes
+- [ ] Requisitos
+- [ ] MER
+- [ ] Especificação de casos de uso

@@ -1,15 +1,22 @@
 import { useState, useRef, useEffect, type FC } from 'react';
 import { Search, SlidersHorizontal, ArrowLeft, Heart, Home, Compass, User, Menu, Star, Plus } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
+import type { Place } from '../types/place';
 import './EstablishmentList.css';
 
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const statePlaces = (location.state as { places?: Place[] } | null)?.places;
+
   const [activeChips, setActiveChips] = useState<string[]>(['VEGAN']);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { places, loading, error } = usePlaces();
+  const { places: fetchedPlaces, loading, error } = usePlaces();
+
+  // Usa os places vindos do router state (busca da home) ou os buscados da API
+  const places = statePlaces ?? fetchedPlaces;
 
   const chips = ['VEGAN', 'COZY', 'ROOFTOP', 'FUN'];
 
@@ -102,9 +109,14 @@ const EstablishmentListPage: FC = () => {
       </section>
 
       <main className="list-content">
-        {loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
-        {error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
-        {!loading && !error && places && places.map(place => (
+        {statePlaces && (
+          <div style={{ padding: '8px 16px 0', fontSize: '13px', color: '#6B7280' }}>
+            {statePlaces.length} resultado{statePlaces.length !== 1 ? 's' : ''} da sua busca
+          </div>
+        )}
+        {!statePlaces && loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
+        {!statePlaces && error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
+        {places && places.map(place => (
           <div key={place.id} className="establishment-card" onClick={() => navigate(`/establishment/${place.id}`)}>
             {/* Placeholder until photos logic is added */}
             <img src={'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop'} alt={place.name} className="card-image" />

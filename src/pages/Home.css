@@ -121,6 +121,7 @@
 
 .chips-scroll {
   display: flex;
+  align-items: center;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
@@ -129,6 +130,62 @@
 
 .chips-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.chip-clear-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #1F2937;
+  color: white;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.chip-clear-btn:hover {
+  background: #374151;
+}
+
+.chip-clear-btn.flashing {
+  animation: flash-orange 0.35s ease forwards;
+}
+
+@keyframes flash-orange {
+  0%   { background: #1F2937; }
+  40%  { background: #EB6B3D; }
+  100% { background: #1F2937; }
+}
+
+/* Botão flutuante de resultados */
+.view-results-btn {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #EB6B3D, #e8531e);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(235, 107, 61, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.2px;
+}
+
+.view-results-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(235, 107, 61, 0.5);
+}
+
+.view-results-btn:active {
+  transform: translateY(0);
 }
 
 .chip {

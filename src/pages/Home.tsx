@@ -1,10 +1,11 @@
-import React, { useState, type FC } from 'react';
+import React, { useState, useEffect, type FC } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
-import { Search, SlidersHorizontal, MapPin, Coffee, Utensils, Heart, Home, Compass, User, Menu, X, Star, Store } from 'lucide-react';
+import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Home.css';
+import api from '../services/api';
 
 // Fix for default marker icon issues in Leaflet with React
 // @ts-ignore
@@ -15,37 +16,84 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+interface Tag {
+  id: string;
+  name: string;
+}
+
+interface Place {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
 const HomePage: FC = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeChips, setActiveChips] = useState<string[]>(['Vegan']);
+  const [activeChips, setActiveChips] = useState<string[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
+  const [loadingTags, setLoadingTags] = useState(true);
 
-  const chips = [
-    { name: 'Vegan', icon: '🌱' },
-    { name: 'Coffee', icon: '☕' },
-    { name: 'Rooftop', icon: '🌇' },
-    { name: 'Fuel', icon: '⛽' }
-  ];
+  // Fetch all tags on mount
+  useEffect(() => {
+    api.get<Tag[]>('/tags')
+      .then(res => setTags(res.data))
+      .catch(err => console.error('Erro ao buscar tags:', err))
+      .finally(() => setLoadingTags(false));
+  }, []);
 
-  const toggleChip = (name: string) => {
-    if (activeChips.includes(name)) {
-      setActiveChips(activeChips.filter(c => c !== name));
+  const toggleChip = async (tagName: string) => {
+    const isActive = activeChips.includes(tagName);
+    const newActive = isActive
+      ? activeChips.filter(c => c !== tagName)
+      : [...activeChips, tagName];
+
+    console.log('[chip click]', tagName, '| isActive:', isActive, '| newActive:', newActive);
+    setActiveChips(newActive);
+
+    if (!isActive) {
+      try {
+        console.log('[fetch] GET /places/findByTag?tag=', tagName);
+        const res = await api.get<Place[]>('/places/findByTag', { params: { tag: tagName } });
+        console.log('[fetch] resultado:', res.data);
+        setFilteredPlaces(prev => {
+          const ids = new Set(prev.map(p => p.id));
+          return [...prev, ...res.data.filter(p => !ids.has(p.id))];
+        });
+      } catch (err: any) {
+        console.error('[fetch] erro ao buscar places por tag:', err?.response?.status, err?.response?.data ?? err?.message);
+      }
     } else {
-      setActiveChips([...activeChips, name]);
+      if (newActive.length === 0) {
+        setFilteredPlaces([]);
+      } else {
+        try {
+          const results = await Promise.all(
+            newActive.map(t => api.get<Place[]>('/places/findByTag', { params: { tag: t } }))
+          );
+          const allPlaces = results.flatMap(r => r.data);
+          const unique = Array.from(new Map(allPlaces.map(p => [p.id, p])).values());
+          console.log('[fetch] places após remoção de chip:', unique);
+          setFilteredPlaces(unique);
+        } catch (err: any) {
+          console.error('[fetch] erro ao atualizar places:', err?.response?.status, err?.response?.data ?? err?.message);
+        }
+      }
     }
   };
 
-  // Default coordinates (London as in reference, OR can use user location)
-  const position: [number, number] = [-23.5505, -46.6333];
+  const defaultPosition: [number, number] = [-23.5505, -46.6333];
 
   return (
     <div className="home-page">
       {/* Leaflet Map */}
       <div className="map-container">
-        <MapContainer 
-          center={position} 
-          zoom={13} 
-          scrollWheelZoom={true} 
+        <MapContainer
+          center={defaultPosition}
+          zoom={13}
+          scrollWheelZoom={true}
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
         >
@@ -53,11 +101,13 @@ const HomePage: FC = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker position={position}>
-            <Popup>
-              The Green Bean Cafe
-            </Popup>
-          </Marker>
+          {filteredPlaces
+            .filter(place => place.latitude != null && place.longitude != null)
+            .map(place => (
+              <Marker key={place.id} position={[place.latitude, place.longitude]}>
+                <Popup>{place.name}</Popup>
+              </Marker>
+            ))}
           <ZoomControl position="bottomright" />
         </MapContainer>
       </div>
@@ -86,16 +136,19 @@ const HomePage: FC = () => {
           </div>
 
           <div className="chips-scroll">
-            {chips.map(chip => (
-              <div 
-                key={chip.name} 
-                className={`chip ${activeChips.includes(chip.name) ? 'active' : ''}`}
-                onClick={() => toggleChip(chip.name)}
-              >
-                <span className="chip-icon">{chip.icon}</span>
-                {chip.name}
-              </div>
-            ))}
+            {loadingTags ? (
+              <span className="chip-loading">Carregando...</span>
+            ) : (
+              tags.map(tag => (
+                <div
+                  key={tag.id}
+                  className={`chip ${activeChips.includes(tag.name) ? 'active' : ''}`}
+                  onClick={() => toggleChip(tag.name)}
+                >
+                  {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -130,8 +183,8 @@ const HomePage: FC = () => {
               <Store size={20} /> Estabelecimento
             </Link>
             <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '8px 0' }} />
-            <button 
-              className="menu-item" 
+            <button
+              className="menu-item"
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');

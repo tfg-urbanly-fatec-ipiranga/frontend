@@ -6,6 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Home.css';
 import api from '../services/api';
+import BottomNav from '../components/BottomNav';
 
 // Fix for default marker icon issues in Leaflet with React
 // @ts-ignore
@@ -238,22 +239,7 @@ const HomePage: FC = () => {
           )}
           {/* Bottom Nav */}
           <nav className="bottom-nav">
-            <Link to="/home" className="nav-item active">
-              <Home size={22} />
-              <span className="nav-label">Home</span>
-            </Link>
-            <Link to="/establishments" className="nav-item">
-              <Compass size={22} />
-              <span className="nav-label">Explorar</span>
-            </Link>
-            <Link to="#" className="nav-item">
-              <Heart size={22} />
-              <span className="nav-label">Favoritos</span>
-            </Link>
-            <Link to="/edit-profile" className="nav-item">
-              <User size={22} />
-              <span className="nav-label">Perfil</span>
-            </Link>
+            <BottomNav />
           </nav>
         </div>
       </div>

@@ -1,0 +1,29 @@
+.bottom-nav {
+  background: white;
+  border-top: 1px solid #F3F4F6;
+  display: flex;
+  padding: 12px 8px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #9BA3AF;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  color:var(--accent) 
+}
+
+.nav-item svg {
+  stroke: currentColor;
+}

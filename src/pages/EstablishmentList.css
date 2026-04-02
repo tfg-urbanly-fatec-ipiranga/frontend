@@ -304,35 +304,3 @@
 .favorite-btn.active {
   color: var(--accent);
 }
-
-/* Bottom Nav */
-.bottom-nav {
-  background: white;
-  border-top: 1px solid #F3F4F6;
-  display: flex;
-  justify-content: space-around;
-  padding: 12px 8px;
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: #9BA3AF;
-  text-decoration: none;
-  flex: 1;
-}
-
-.nav-item.active {
-  color: var(--accent);
-}
-
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-}

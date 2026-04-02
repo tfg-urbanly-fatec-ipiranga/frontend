@@ -317,36 +317,6 @@
   cursor: pointer;
 }
 
-/* Bottom Nav */
-.bottom-nav {
-  background: white;
-  border-radius: 24px;
-  display: flex;
-  justify-content: space-around;
-  padding: 12px 8px;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: #9BA3AF;
-  text-decoration: none;
-  flex: 1;
-}
-
-.nav-item.active {
-  color: var(--accent);
-}
-
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
 /* Hamburger Menu Modal */
 .menu-overlay {
   position: fixed;

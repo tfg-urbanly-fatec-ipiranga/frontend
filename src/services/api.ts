@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
   if (stored) {
     try {
       const user = JSON.parse(stored);
-      const token = user.access_token || user.token;
+      const token = user.accessToken || user.access_token || user.token;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -22,5 +22,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

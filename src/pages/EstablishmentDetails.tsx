@@ -18,10 +18,23 @@ const EstablishmentDetailsPage: FC = () => {
   }
 
   if (error || !place) {
+    const isUnauthorized = error?.toLowerCase().includes('unauthorized') || error?.toLowerCase().includes('401');
     return (
-      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
-        <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
-        <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>Voltar</button>
+      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px', padding: '24px', textAlign: 'center' }}>
+        {isUnauthorized ? (
+          <>
+            <p style={{ fontSize: '18px', color: '#374151' }}>Crie uma conta para ver mais informações</p>
+            <button className="action-button" onClick={() => navigate('/register')} style={{ marginTop: '8px' }}>Criar conta</button>
+            <p style={{ fontSize: '14px', color: '#6B7280' }}>
+              Já tem uma conta? <span style={{ color: '#EB6B3D', cursor: 'pointer' }} onClick={() => navigate('/login')}>Entrar</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
+            <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>Voltar</button>
+          </>
+        )}
       </div>
     );
   }

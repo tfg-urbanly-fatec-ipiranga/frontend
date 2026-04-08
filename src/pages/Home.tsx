@@ -60,7 +60,7 @@ const HomePage: FC = () => {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await api.get<Place[]>('/places/searchByName', {
+        const res = await api.get<Place[]>('/places/search', {
           params: { searchTerm: searchTerm.trim() },
         });
         setSearchPlaces(res.data);

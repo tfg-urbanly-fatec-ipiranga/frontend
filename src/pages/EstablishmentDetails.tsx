@@ -24,7 +24,7 @@ const EstablishmentDetailsPage: FC = () => {
         {isUnauthorized ? (
           <>
             <p style={{ fontSize: '18px', color: '#374151' }}>Crie uma conta para ver mais informações</p>
-            <button className="action-button" onClick={() => navigate('/register')} style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '12px 32px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>Criar conta</button>
+            <button className="action-button" onClick={() => navigate('/register')} style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '14px 64px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', width: '80%', maxWidth: '320px', flex: 'none' }}>Criar conta</button>
             <p style={{ fontSize: '14px', color: '#6B7280' }}>
               Já tem uma conta? <span style={{ color: '#EB6B3D', cursor: 'pointer' }} onClick={() => navigate('/login')}>Entrar</span>
             </p>

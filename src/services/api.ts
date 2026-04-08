@@ -27,8 +27,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

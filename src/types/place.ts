@@ -1,4 +1,5 @@
 export interface Place {
+  photos: any;
   id: string;
   name: string;
   description?: string;

@@ -1,13 +1,17 @@
 import React, { useState, type FC } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import './EditEstablishment.css';
+import { useUpdatePlace } from '../hooks/useUpdatePlace';
+import { usePlaceDetails } from '../hooks/usePlaceDetails';
+import { useCategories } from '../hooks/useCategories';
 
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { place, loading, error } = usePlaceDetails(id);
+  const { place } = usePlaceDetails(id);
+  const { updatePlace, loading, error } = useUpdatePlace();
+  const { categories } = useCategories();
   const [activeTags, setActiveTags] = useState<string[]>(['Natural', 'Aconchegante']);
   
   const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável'];
@@ -36,6 +40,29 @@ const EditEstablishment: FC = () => {
       </div>
     );
   }
+
+  const handleSave = async () => {
+    if (!id) return;
+
+    const payload: any = {
+      name: (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value,
+      description: (document.querySelector('textarea') as HTMLTextAreaElement)?.value,
+      address: (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value,
+      categoryId: (document.querySelector('select') as HTMLSelectElement)?.value,
+      openingTime: (document.querySelector('input[type="time"]:nth-of-type(1)') as HTMLInputElement)?.value,
+      closingTime: (document.querySelector('input[type="time"]:nth-of-type(2)') as HTMLInputElement)?.value,
+    };
+
+    if (!payload.categoryId) {
+      delete payload.categoryId;
+    }
+
+    const updated = await updatePlace(id, payload);
+
+    if (updated) {
+      alert('Atualizado com sucesso!');
+    }
+  };
 
   return (
     <div className="edit-establishment-page">
@@ -72,14 +99,46 @@ const EditEstablishment: FC = () => {
           </div>
         </div>
 
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Abre às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time"
+                defaultValue={place.openingTime || '08:00'}
+                className="input-element"
+              />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Fecha às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time"
+                defaultValue={place.closingTime || '18:00'}
+                className="input-element"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="form-group">
           <label className="form-label">Categoria</label>
           <div className="select-container">
             <Coffee size={20} className="input-icon" />
-            <select className="select-element" defaultValue="cafe">
-              <option value="cafe">Café & Restaurante</option>
-              <option value="bar">Bar & Pub</option>
-              <option value="store">Loja</option>
+            <select 
+              className="select-element" 
+              defaultValue={place.categoryId || ''}
+            >
+              <option value="">Selecione uma categoria (opcional)</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             <ChevronDown size={20} className="chevron-icon" />
           </div>
@@ -121,7 +180,7 @@ const EditEstablishment: FC = () => {
           </div>
         </div>
 
-        <button className="save-button">
+        <button className="save-button" onClick={handleSave}>
           Salvar Alterações <ArrowRight size={20} />
         </button>
       </main>

@@ -5,6 +5,7 @@ import { usePlaces } from '../hooks/usePlaces';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
 import BottomNav from '../components/BottomNav';
+import React from 'react';
 
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();

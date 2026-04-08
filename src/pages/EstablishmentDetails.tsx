@@ -3,6 +3,7 @@ import { ArrowLeft, Share2, Heart, Star, Clock, Map as MapIcon, Phone, Settings 
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import './EstablishmentDetails.css';
+import React from 'react';
 
 const EstablishmentDetailsPage: FC = () => {
   const navigate = useNavigate();

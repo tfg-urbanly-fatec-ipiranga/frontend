@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, type FC } from 'react';
+import React, { useState, useEffect, useRef, useMemo, type FC } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
 import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,6 +25,10 @@ interface Tag {
 interface Place {
   id: string;
   name: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  categoryId?: string | null;
   latitude: number;
   longitude: number;
 }
@@ -39,6 +43,8 @@ const HomePage: FC = () => {
   const [searchPlaces, setSearchPlaces] = useState<Place[]>([]);
   const [loadingTags, setLoadingTags] = useState(true);
   const [isClearFlashing, setIsClearFlashing] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch all tags on mount
@@ -55,6 +61,8 @@ const HomePage: FC = () => {
 
     if (!searchTerm.trim()) {
       setSearchPlaces([]);
+      setFilterOpen(false);
+      setSelectedCities([]);
       return;
     }
 
@@ -74,21 +82,34 @@ const HomePage: FC = () => {
     };
   }, [searchTerm]);
 
-  // Lógica combinada: busca + chips
-  // - Só busca: exibe resultados da busca
-  // - Só chips: exibe places dos chips
-  // - Ambos: interseção (places que estão na busca E têm a tag ativa)
+  // Cidades únicas disponíveis nos resultados de busca
+  const availableCities = useMemo(
+    () => [...new Set(searchPlaces.map(p => p.city).filter((c): c is string => Boolean(c)))],
+    [searchPlaces]
+  );
+
+  // Lógica combinada: busca + chips + filtros avançados
   const displayedPlaces = (() => {
     const hasSearch = searchTerm.trim().length > 0;
     const hasChips = activeChips.length > 0;
 
+    let result: Place[];
     if (hasSearch && hasChips) {
       const chipIds = new Set(filteredPlaces.map(p => p.id));
-      return searchPlaces.filter(p => chipIds.has(p.id));
+      result = searchPlaces.filter(p => chipIds.has(p.id));
+    } else if (hasSearch) {
+      result = searchPlaces;
+    } else if (hasChips) {
+      result = filteredPlaces;
+    } else {
+      result = [];
     }
-    if (hasSearch) return searchPlaces;
-    if (hasChips) return filteredPlaces;
-    return [];
+
+    if (selectedCities.length > 0) {
+      result = result.filter(p => p.city && selectedCities.includes(p.city));
+    }
+
+    return result;
   })();
 
   const clearFilters = () => {
@@ -196,10 +217,64 @@ const HomePage: FC = () => {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
-            <button className="filter-button">
+            <button
+              className={`filter-button${searchPlaces.length > 0 ? ' filter-button--active' : ''}`}
+              onClick={() => { if (searchPlaces.length > 0) setFilterOpen(o => !o); }}
+              title={searchPlaces.length > 0 ? 'Filtros avançados' : 'Faça uma busca para usar filtros'}
+            >
               <SlidersHorizontal size={20} />
             </button>
           </div>
+
+          {filterOpen && searchPlaces.length > 0 && (
+            <div className="filter-panel">
+              <div className="filter-panel-header">
+                <span className="filter-panel-title">Filtros Avançados</span>
+                <button className="filter-panel-close" onClick={() => setFilterOpen(false)}>✕</button>
+              </div>
+
+              {availableCities.length > 0 ? (
+                <div className="filter-section">
+                  <div className="filter-section-title">Cidade</div>
+                  <div className="filter-options">
+                    {availableCities.map(city => (
+                      <label key={city} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedCities.includes(city)}
+                          onChange={() =>
+                            setSelectedCities(prev =>
+                              prev.includes(city)
+                                ? prev.filter(c => c !== city)
+                                : [...prev, city]
+                            )
+                          }
+                        />
+                        <span>{city}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="filter-empty">Nenhum filtro disponível para esses resultados.</p>
+              )}
+
+              <div className="filter-actions">
+                <button
+                  className="filter-btn-clear"
+                  onClick={() => setSelectedCities([])}
+                >
+                  Limpar
+                </button>
+                <button
+                  className="filter-btn-apply"
+                  onClick={() => setFilterOpen(false)}
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="chips-scroll">
             {activeChips.length > 0 && (

@@ -8,8 +8,8 @@ const BottomNav = () => {
   return (
     <nav className="bottom-nav">
       <Link
-        to="/establishments"
-        className={`nav-item ${location.pathname === '/establishments' ? 'active' : ''}`}
+        to="/home"
+        className={`nav-item ${location.pathname === '/home' ? 'active' : ''}`}
       >
         <Compass size={22} />
         <span className="nav-label">Explorar</span>

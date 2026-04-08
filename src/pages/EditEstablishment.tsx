@@ -13,6 +13,8 @@ const EditEstablishment: FC = () => {
   const { updatePlace, loading, error } = useUpdatePlace();
   const { categories } = useCategories();
   const [activeTags, setActiveTags] = useState<string[]>(['Natural', 'Aconchegante']);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   
   const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável'];
 
@@ -44,25 +46,39 @@ const EditEstablishment: FC = () => {
   const handleSave = async () => {
     if (!id) return;
 
-    const payload: any = {
-      name: (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value,
-      description: (document.querySelector('textarea') as HTMLTextAreaElement)?.value,
-      address: (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value,
-      categoryId: (document.querySelector('select') as HTMLSelectElement)?.value,
-      openingTime: (document.querySelector('input[type="time"]:nth-of-type(1)') as HTMLInputElement)?.value,
-      closingTime: (document.querySelector('input[type="time"]:nth-of-type(2)') as HTMLInputElement)?.value,
-    };
+    const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
+    const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
+    const city = (document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement)?.value.trim();
+    const address = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
+    const openingTime = (document.querySelector('input[name="openingTime"]') as HTMLInputElement)?.value;
+    const closingTime = (document.querySelector('input[name="closingTime"]') as HTMLInputElement)?.value;
+    const categoryId = (document.querySelector('select') as HTMLSelectElement)?.value;
 
-    if (!payload.categoryId) {
-      delete payload.categoryId;
+    // Validação
+    if (!name || !description || !city || !address || !openingTime || !closingTime) {
+      setErrorMessage("Preencha todos os campos obrigatórios.");
+      return;
     }
+
+    const payload: any = {
+      name,
+      description,
+      city,
+      address,
+      openingTime,
+      closingTime,
+      categoryId: categoryId || undefined,
+    };
 
     const updated = await updatePlace(id, payload);
 
     if (updated) {
       alert('Atualizado com sucesso!');
+      navigate(`/establishments`);
     }
   };
+
+
 
   return (
     <div className="edit-establishment-page">
@@ -92,6 +108,14 @@ const EditEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
+          <label className="form-label">Cidade</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input type="text" defaultValue={place.city} placeholder="Insira a cidade" className="input-element" />
+          </div>
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Endereço</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
@@ -106,6 +130,7 @@ const EditEstablishment: FC = () => {
               <Clock size={20} className="input-icon" />
               <input 
                 type="time"
+                name="openingTime" 
                 defaultValue={place.openingTime || '08:00'}
                 className="input-element"
               />
@@ -118,6 +143,7 @@ const EditEstablishment: FC = () => {
               <Clock size={20} className="input-icon" />
               <input 
                 type="time"
+                name="closingTime" 
                 defaultValue={place.closingTime || '18:00'}
                 className="input-element"
               />
@@ -179,6 +205,12 @@ const EditEstablishment: FC = () => {
             </button>
           </div>
         </div>
+
+        {errorMessage && (
+          <p style={{ color: 'red', marginBottom: '16px' }}>
+            {errorMessage}
+          </p>
+        )}
 
         <button className="save-button" onClick={handleSave}>
           Salvar Alterações <ArrowRight size={20} />

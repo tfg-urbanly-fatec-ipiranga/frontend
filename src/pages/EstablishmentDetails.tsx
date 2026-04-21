@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { ArrowLeft, Share2, Heart, Star, Clock, Map as MapIcon, Phone, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
+import { useFavorites } from '../hooks/useFavorites';
 import './EstablishmentDetails.css';
 import React from 'react';
 
@@ -9,6 +10,7 @@ const EstablishmentDetailsPage: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { place, loading, error } = usePlaceDetails(id);
+  const { isFavorite, toggleFavorite } = useFavorites();
   if (loading) {
     return (
       <div className="establishment-details-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -58,8 +60,11 @@ const EstablishmentDetailsPage: FC = () => {
       <main>
         <section className="hero-section">
           <img src={imageUrl} alt={place.name} className="hero-image" />
-          <button className="floating-favorite">
-            <Heart size={24} fill="none" />
+          <button
+            className={`floating-favorite ${place && isFavorite(place.id) ? 'active' : ''}`}
+            onClick={() => place && toggleFavorite(place.id)}
+          >
+            <Heart size={24} fill={place && isFavorite(place.id) ? 'currentColor' : 'none'} />
           </button>
         </section>
 

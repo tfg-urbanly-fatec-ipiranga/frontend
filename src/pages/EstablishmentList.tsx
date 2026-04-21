@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, type FC } from 'react';
-import { Search, SlidersHorizontal, ArrowLeft, Heart, Home, Compass, User, Menu, Star, Plus } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
+import { useFavorites } from '../hooks/useFavorites';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
 import BottomNav from '../components/BottomNav';
@@ -16,6 +17,7 @@ const EstablishmentListPage: FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { places: fetchedPlaces, loading, error } = usePlaces();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   // Usa os places vindos do router state (busca da home) ou os buscados da API
   const places = statePlaces ?? fetchedPlaces;
@@ -133,8 +135,11 @@ const EstablishmentListPage: FC = () => {
                   <span key={tag.id} className="card-tag">{tag.name}</span>
                 ))}
               </div>
-              <button className={`favorite-btn`} onClick={(e) => e.stopPropagation()}>
-                <Heart size={20} fill={'none'} />
+              <button
+                className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}
+                onClick={(e) => { e.stopPropagation(); toggleFavorite(place.id); }}
+              >
+                <Heart size={20} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
               </button>
             </div>
           </div>

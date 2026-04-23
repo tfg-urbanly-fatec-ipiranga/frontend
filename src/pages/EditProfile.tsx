@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, type FC } from 'react';
 import { ArrowLeft, User, AtSign, Mail, Lock, Calendar, Camera, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUploadAvatar } from '../hooks/useUploadAvatar';
+import { useAuthContext } from "../context/AuthContext";
 import './EditProfile.css';
 
 const EditProfilePage: FC = () => {
@@ -11,6 +12,7 @@ const EditProfilePage: FC = () => {
   const { uploadAvatar, loading: uploadingAvatar, error: avatarError } = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const { logout } = useAuthContext();
 
   const [formData, setFormData] = useState({
     name: 'Alisson Geovani',
@@ -192,7 +194,8 @@ const EditProfilePage: FC = () => {
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                navigate('/login');
+                logout();
+                navigate('/home');
               }}
               style={{
                 background: 'none',

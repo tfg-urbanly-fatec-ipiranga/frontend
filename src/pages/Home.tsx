@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store }
 import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useAuthContext } from "../context/AuthContext";
 import './Home.css';
 import api from '../services/api';
 import BottomNav from '../components/BottomNav';
@@ -46,6 +47,7 @@ const HomePage: FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { logout } = useAuthContext();
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -332,7 +334,8 @@ const HomePage: FC = () => {
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                navigate('/login');
+                logout();
+                window.location.reload();
               }}
               style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
             >

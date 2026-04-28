@@ -131,8 +131,8 @@ const EstablishmentListPage: FC = () => {
               </div>
               <p className="card-description">{place.description}</p>
               <div className="card-tags">
-                {place.tags?.map(tag => (
-                  <span key={tag.id} className="card-tag">{tag.name}</span>
+                {place.placeTags?.map(pt => (
+                  <span key={pt.tag.name} className="card-tag">{pt.tag.name}</span>
                 ))}
               </div>
               <button
@@ -157,3 +157,4 @@ const EstablishmentListPage: FC = () => {
 };
 
 export default EstablishmentListPage;
+

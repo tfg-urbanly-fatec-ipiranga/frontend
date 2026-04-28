@@ -405,16 +405,23 @@ const HomePage: FC = () => {
           </div>
         </section>
 
-        <div className="bottom-content">
-          {/* Botão flutuante de resultados */}
-          {displayedPlaces.length > 0 && searchTerm.trim() && (
-            <button
-              className="view-results-btn"
-              onClick={() => navigate('/establishments', { state: { places: displayedPlaces } })}
-            >
-              Ver {displayedPlaces.length} resultado{displayedPlaces.length !== 1 ? 's' : ''} na lista
-            </button>
+        {/* Botão flutuante de resultados - fixo acima da navbar */}
+          {displayedPlaces.length > 0 && (searchTerm.trim() || activeChips.length > 0) && (
+            <div className="view-results-wrapper">
+              <button
+                className="view-results-btn"
+                onClick={() => navigate('/establishments', { state: { places: displayedPlaces } })}
+              >
+                <span className="view-results-btn__icon">▤</span>
+                Ver {displayedPlaces.length} resultado{displayedPlaces.length !== 1 ? 's' : ''} na lista
+                {activeChips.length > 0 && !searchTerm.trim() && (
+                  <span className="view-results-btn__badge">{activeChips.length} filtro{activeChips.length !== 1 ? 's' : ''}</span>
+                )}
+              </button>
+            </div>
           )}
+
+        <div className="bottom-content">
           {/* Bottom Nav */}
           <nav className="bottom-nav">
             <BottomNav />

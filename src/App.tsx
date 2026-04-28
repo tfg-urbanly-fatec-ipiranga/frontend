@@ -8,9 +8,29 @@ import HomePage from './pages/Home';
 import EstablishmentListPage from './pages/EstablishmentList';
 import EstablishmentDetailsPage from './pages/EstablishmentDetails';
 import FavoritesPage from './pages/Favorites';
+import InactiveRecordsPage from './pages/InactiveRecords';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import React from "react";
+
+function isAdmin(): boolean {
+  try {
+    const stored = localStorage.getItem('user');
+    if (!stored) return false;
+    const parsed = JSON.parse(stored);
+    const user = parsed.user || parsed;
+    return user.role === 'ADMIN';
+  } catch {
+    return false;
+  }
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  if (!isAdmin()) {
+    return <Navigate to="/home" replace />;
+  }
+  return <>{children}</>;
+}
 
 function App() {
   return (
@@ -26,6 +46,7 @@ function App() {
           <Route path="/establishments" element={<EstablishmentListPage />} />
           <Route path="/establishment/:id" element={<EstablishmentDetailsPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/admin/inactive" element={<AdminRoute><InactiveRecordsPage /></AdminRoute>} />
           <Route path="/" element={<Navigate to="/home" replace />} />
         </Routes>
       </Router>

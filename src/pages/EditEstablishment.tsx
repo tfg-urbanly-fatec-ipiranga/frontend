@@ -1,10 +1,11 @@
 import React, { useState, type FC } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './EditEstablishment.css';
 import { useUpdatePlace } from '../hooks/useUpdatePlace';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import { useCategories } from '../hooks/useCategories';
+import api from '../services/api';
 
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const EditEstablishment: FC = () => {
   const { categories } = useCategories();
   const [activeTags, setActiveTags] = useState<string[]>(['Natural', 'Aconchegante']);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   
   const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável'];
@@ -214,6 +216,29 @@ const EditEstablishment: FC = () => {
 
         <button className="save-button" onClick={handleSave}>
           Salvar Alterações <ArrowRight size={20} />
+        </button>
+
+        <button
+          className="delete-button"
+          disabled={deleting}
+          onClick={async () => {
+            if (!id) return;
+            const confirmed = window.confirm(
+              'Tem certeza que deseja desativar este estabelecimento? Ele poderá ser restaurado por um administrador.'
+            );
+            if (!confirmed) return;
+            setDeleting(true);
+            try {
+              await api.delete(`/places/${id}`);
+              navigate('/establishments');
+            } catch (err: any) {
+              setErrorMessage(err.response?.data?.message || 'Erro ao desativar estabelecimento');
+              setDeleting(false);
+            }
+          }}
+        >
+          <Trash2 size={18} />
+          {deleting ? 'Desativando...' : 'Desativar Estabelecimento'}
         </button>
       </main>
     </div>

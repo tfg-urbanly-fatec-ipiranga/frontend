@@ -8,7 +8,7 @@ import React from 'react';
 
 const FavoritesPage: FC = () => {
   const navigate = useNavigate();
-  const { favorites, loading, error, isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, loading, error, isFavorite, isToggling, toggleFavorite } = useFavorites();
 
   const [search, setSearch] = useState('');
   const [showMenu, setShowMenu] = useState(false);
@@ -143,7 +143,7 @@ const FavoritesPage: FC = () => {
               )}
               {item.place.category && (
                 <div className="fav-card-tags">
-                  <span className="fav-card-tag">{item.place.category}</span>
+                  <span className="fav-card-tag">{item.place.category.name}</span>
                 </div>
               )}
             </div>
@@ -153,6 +153,9 @@ const FavoritesPage: FC = () => {
                 e.stopPropagation();
                 toggleFavorite(item.place.id);
               }}
+              disabled={isToggling(item.place.id)}
+              aria-label={isFavorite(item.place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              style={{ opacity: isToggling(item.place.id) ? 0.5 : 1 }}
             >
               <Heart size={20} fill={isFavorite(item.place.id) ? 'currentColor' : 'none'} />
             </button>

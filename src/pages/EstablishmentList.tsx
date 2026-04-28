@@ -17,7 +17,7 @@ const EstablishmentListPage: FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { places: fetchedPlaces, loading, error } = usePlaces();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, isToggling, toggleFavorite } = useFavorites();
 
   // Usa os places vindos do router state (busca da home) ou os buscados da API
   const places = statePlaces ?? fetchedPlaces;
@@ -138,6 +138,9 @@ const EstablishmentListPage: FC = () => {
               <button
                 className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(place.id); }}
+                disabled={isToggling(place.id)}
+                aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
               >
                 <Heart size={20} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
               </button>

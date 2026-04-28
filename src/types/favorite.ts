@@ -5,6 +5,6 @@ export interface FavoriteItem {
     id: string;
     name: string;
     city: string | null;
-    category: string | null;
+    category: { name: string } | null;
   };
 }

@@ -10,7 +10,7 @@ const EstablishmentDetailsPage: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { place, loading, error } = usePlaceDetails(id);
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   if (loading) {
     return (
       <div className="establishment-details-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -63,6 +63,9 @@ const EstablishmentDetailsPage: FC = () => {
           <button
             className={`floating-favorite ${place && isFavorite(place.id) ? 'active' : ''}`}
             onClick={() => place && toggleFavorite(place.id)}
+            disabled={!!place && isToggling(place.id)}
+            aria-label={place && isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            style={{ opacity: place && isToggling(place.id) ? 0.5 : 1 }}
           >
             <Heart size={24} fill={place && isFavorite(place.id) ? 'currentColor' : 'none'} />
           </button>

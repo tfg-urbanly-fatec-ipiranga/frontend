@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store }
 import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useAuthContext } from "../context/AuthContext";
 import './Home.css';
 import api from '../services/api';
 import BottomNav from '../components/BottomNav';
@@ -147,6 +148,17 @@ const HomePage: FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { logout, isAuthenticated  } = useAuthContext();
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
+
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return "";
+    const firstInitial = firstName ? firstName[0].toUpperCase() : "";
+    const lastInitial = lastName ? lastName[0].toUpperCase() : "";
+    return firstInitial + lastInitial;
+  };
+
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -298,17 +310,41 @@ const HomePage: FC = () => {
 
       {/* UI Overlays */}
       <div className="home-overlay">
-        <header className="home-header">
-          <div className="brand-text">Urbanly</div>
-          <div className="header-right">
+      <header className="home-header">
+        <div className="brand-text">Urbanly</div>
+        <div className="header-right">
+          {isAuthenticated && (
             <div className="profile-pic">
-              <img src="https://ui-avatars.com/api/?name=John+Doe&background=EB6B3D&color=fff" alt="Profile" style={{ width: '100%', borderRadius: '50%' }} />
+              {parsedUser?.avatar ? (
+                <img
+                  src={parsedUser.avatar}
+                  alt="Profile"
+                  style={{ width: "100%", borderRadius: "50%" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: "#EB6B3D",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {getInitials(parsedUser?.firstName, parsedUser?.lastName)}
+                </div>
+              )}
             </div>
-            <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </header>
+          )}
+          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </header>
 
         <section className="search-filter-area">
           <div className="search-bar-container">
@@ -442,7 +478,8 @@ const HomePage: FC = () => {
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                navigate('/login');
+                logout();
+                window.location.reload();
               }}
               style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
             >

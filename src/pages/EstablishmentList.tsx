@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus } from 'l
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
 import { useFavorites } from '../hooks/useFavorites';
+import { useAuthContext } from "../context/AuthContext";
 import { useTags } from '../hooks/useTags';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
@@ -18,8 +19,20 @@ const EstablishmentListPage: FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { places: fetchedPlaces, loading, error } = usePlaces();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { logout, isAuthenticated  } = useAuthContext();
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { tags, loading: tagsLoading } = useTags();
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
+  
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return "";
+    const firstInitial = firstName ? firstName[0].toUpperCase() : "";
+    const lastInitial = lastName ? lastName[0].toUpperCase() : "";
+    return firstInitial + lastInitial;
+  };
+
 
   // Usa os places vindos do router state (busca da home) ou os buscados da API
   const allPlaces = statePlaces ?? fetchedPlaces;
@@ -58,9 +71,33 @@ const EstablishmentListPage: FC = () => {
         </button>
         <div className="brand-text">Urbanly</div>
         <div className="header-right">
-          <div className="profile-pic">
-            <img src="https://ui-avatars.com/api/?name=Admin+User&background=EB6B3D&color=fff" alt="Profile" style={{ width: '100%', borderRadius: '50%' }} />
-          </div>
+          {isAuthenticated && (
+            <div className="profile-pic">
+              {parsedUser?.avatar ? (
+                <img
+                  src={parsedUser.avatar}
+                  alt="Profile"
+                  style={{ width: "100%", borderRadius: "50%" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: "#EB6B3D",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {getInitials(parsedUser?.firstName, parsedUser?.lastName)}
+                </div>
+              )}
+            </div>
+          )}
           <div className="menu-container" ref={menuRef}>
             <button className="menu-button" onClick={() => setShowMenu(!showMenu)}>
               <Menu size={24} />
@@ -81,7 +118,8 @@ const EstablishmentListPage: FC = () => {
                     // Clear token/user data (assuming localStorage for now)
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    navigate('/login');
+                    logout();
+                    navigate('/home');
                   }}
                   style={{ color: '#ef4444' }}
                 >

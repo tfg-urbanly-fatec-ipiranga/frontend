@@ -2,12 +2,15 @@ import { useState, type FC } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useAuthContext } from '../context/AuthContext';
 import './Login.css';
+import React from 'react';
 
 const LoginPage: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { loginUser, loading, error } = useAuth();
+  const { login } = useAuthContext();
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,6 +23,7 @@ const LoginPage: FC = () => {
     const user = await loginUser(formData);
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
+      login();
       navigate('/home');
     }
   };

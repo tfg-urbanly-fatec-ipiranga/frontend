@@ -1,14 +1,20 @@
 import React, { useState, type FC } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import './EditEstablishment.css';
+import { useUpdatePlace } from '../hooks/useUpdatePlace';
+import { usePlaceDetails } from '../hooks/usePlaceDetails';
+import { useCategories } from '../hooks/useCategories';
 
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { place, loading, error } = usePlaceDetails(id);
+  const { place } = usePlaceDetails(id);
+  const { updatePlace, loading, error } = useUpdatePlace();
+  const { categories } = useCategories();
   const [activeTags, setActiveTags] = useState<string[]>(['Natural', 'Aconchegante']);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   
   const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável'];
 
@@ -36,6 +42,43 @@ const EditEstablishment: FC = () => {
       </div>
     );
   }
+
+  const handleSave = async () => {
+    if (!id) return;
+
+    const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
+    const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
+    const city = (document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement)?.value.trim();
+    const address = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
+    const openingTime = (document.querySelector('input[name="openingTime"]') as HTMLInputElement)?.value;
+    const closingTime = (document.querySelector('input[name="closingTime"]') as HTMLInputElement)?.value;
+    const categoryId = (document.querySelector('select') as HTMLSelectElement)?.value;
+
+    // Validação
+    if (!name || !description || !city || !address || !openingTime || !closingTime) {
+      setErrorMessage("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    const payload: any = {
+      name,
+      description,
+      city,
+      address,
+      openingTime,
+      closingTime,
+      categoryId: categoryId || undefined,
+    };
+
+    const updated = await updatePlace(id, payload);
+
+    if (updated) {
+      alert('Atualizado com sucesso!');
+      navigate(`/establishments`);
+    }
+  };
+
+
 
   return (
     <div className="edit-establishment-page">
@@ -65,6 +108,14 @@ const EditEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
+          <label className="form-label">Cidade</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input type="text" defaultValue={place.city} placeholder="Insira a cidade" className="input-element" />
+          </div>
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Endereço</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
@@ -72,14 +123,48 @@ const EditEstablishment: FC = () => {
           </div>
         </div>
 
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Abre às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time"
+                name="openingTime" 
+                defaultValue={place.openingTime || '08:00'}
+                className="input-element"
+              />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ flex: 1 }}>
+            <label className="form-label">Fecha às</label>
+            <div className="input-container">
+              <Clock size={20} className="input-icon" />
+              <input 
+                type="time"
+                name="closingTime" 
+                defaultValue={place.closingTime || '18:00'}
+                className="input-element"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="form-group">
           <label className="form-label">Categoria</label>
           <div className="select-container">
             <Coffee size={20} className="input-icon" />
-            <select className="select-element" defaultValue="cafe">
-              <option value="cafe">Café & Restaurante</option>
-              <option value="bar">Bar & Pub</option>
-              <option value="store">Loja</option>
+            <select 
+              className="select-element" 
+              defaultValue={place.categoryId || ''}
+            >
+              <option value="">Selecione uma categoria (opcional)</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             <ChevronDown size={20} className="chevron-icon" />
           </div>
@@ -121,7 +206,13 @@ const EditEstablishment: FC = () => {
           </div>
         </div>
 
-        <button className="save-button">
+        {errorMessage && (
+          <p style={{ color: 'red', marginBottom: '16px' }}>
+            {errorMessage}
+          </p>
+        )}
+
+        <button className="save-button" onClick={handleSave}>
           Salvar Alterações <ArrowRight size={20} />
         </button>
       </main>

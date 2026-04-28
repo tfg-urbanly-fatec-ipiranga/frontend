@@ -22,15 +22,17 @@ const EditProfilePage: FC = () => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
+      const parsed = JSON.parse(storedUser);
+      const user = parsed.user || parsed;
       setFormData(prev => ({
         ...prev,
-        name: parsedUser.name || '',
-        email: parsedUser.email || '',
-        birthDate: parsedUser.birthDate ? new Date(parsedUser.birthDate).toISOString().split('T')[0] : '',
+        name: [user.firstName, user.lastName].filter(Boolean).join(' ') || '',
+        username: user.username || '',
+        email: user.email || '',
+        birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
       }));
-      if (parsedUser.avatar) {
-        setAvatarUrl(parsedUser.avatar);
+      if (user.avatar) {
+        setAvatarUrl(user.avatar);
       }
     }
   }, []);
@@ -42,7 +44,8 @@ const EditProfilePage: FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const userStr = localStorage.getItem('user');
-    const authUser = userStr ? JSON.parse(userStr) : null;
+    const parsed = userStr ? JSON.parse(userStr) : null;
+    const authUser = parsed?.user || parsed;
     
     if (!authUser || !authUser.id) {
       alert("Usuário não logado. Faça o login primeiro!");
@@ -55,7 +58,7 @@ const EditProfilePage: FC = () => {
       if (updatedUser && updatedUser.avatar) {
         setAvatarUrl(updatedUser.avatar);
         // Sync local storage with new avatar
-        localStorage.setItem('user', JSON.stringify({ ...authUser, avatar: updatedUser.avatar }));
+        localStorage.setItem('user', JSON.stringify({ ...parsed, user: { ...authUser, avatar: updatedUser.avatar } }));
       }
     }
   };

@@ -35,6 +35,11 @@
   padding: 8px;
 }
 
+.edit-profile-page .back-button svg {
+  color: white;
+  stroke: white;
+}
+
 .header-title {
   color: white;
   font-size: 20px;

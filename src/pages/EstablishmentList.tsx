@@ -1,15 +1,26 @@
 import { useState, useRef, useEffect, type FC } from 'react';
-import { Search, SlidersHorizontal, ArrowLeft, Heart, Home, Compass, User, Menu, Star, Plus } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
+import { useFavorites } from '../hooks/useFavorites';
+import type { Place } from '../types/place';
 import './EstablishmentList.css';
+import BottomNav from '../components/BottomNav';
+import React from 'react';
 
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const statePlaces = (location.state as { places?: Place[] } | null)?.places;
+
   const [activeChips, setActiveChips] = useState<string[]>(['VEGAN']);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { places, loading, error } = usePlaces();
+  const { places: fetchedPlaces, loading, error } = usePlaces();
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  // Usa os places vindos do router state (busca da home) ou os buscados da API
+  const places = statePlaces ?? fetchedPlaces;
 
   const chips = ['VEGAN', 'COZY', 'ROOFTOP', 'FUN'];
 
@@ -102,9 +113,14 @@ const EstablishmentListPage: FC = () => {
       </section>
 
       <main className="list-content">
-        {loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
-        {error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
-        {!loading && !error && places && places.map(place => (
+        {statePlaces && (
+          <div style={{ padding: '8px 16px 0', fontSize: '13px', color: '#6B7280' }}>
+            {statePlaces.length} resultado{statePlaces.length !== 1 ? 's' : ''} da sua busca
+          </div>
+        )}
+        {!statePlaces && loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
+        {!statePlaces && error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
+        {places && places.map(place => (
           <div key={place.id} className="establishment-card" onClick={() => navigate(`/establishment/${place.id}`)}>
             {/* Placeholder until photos logic is added */}
             <img src={'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop'} alt={place.name} className="card-image" />
@@ -119,8 +135,11 @@ const EstablishmentListPage: FC = () => {
                   <span key={tag.id} className="card-tag">{tag.name}</span>
                 ))}
               </div>
-              <button className={`favorite-btn`} onClick={(e) => e.stopPropagation()}>
-                <Heart size={20} fill={'none'} />
+              <button
+                className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}
+                onClick={(e) => { e.stopPropagation(); toggleFavorite(place.id); }}
+              >
+                <Heart size={20} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
               </button>
             </div>
           </div>
@@ -128,22 +147,7 @@ const EstablishmentListPage: FC = () => {
       </main>
 
       <nav className="bottom-nav">
-        <Link to="/home" className="nav-item">
-          <Home size={22} />
-          <span className="nav-label">Home</span>
-        </Link>
-        <Link to="/establishments" className="nav-item active">
-          <Compass size={22} />
-          <span className="nav-label">Explorar</span>
-        </Link>
-        <Link to="#" className="nav-item">
-          <Heart size={22} />
-          <span className="nav-label">Favoritos</span>
-        </Link>
-        <Link to="/edit-profile" className="nav-item">
-          <User size={22} />
-          <span className="nav-label">Perfil</span>
-        </Link>
+        <BottomNav />
       </nav>
     </div>
   );

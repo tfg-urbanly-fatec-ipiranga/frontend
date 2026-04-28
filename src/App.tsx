@@ -7,6 +7,7 @@ import EditEstablishmentPage from './pages/EditEstablishment';
 import HomePage from './pages/Home';
 import EstablishmentListPage from './pages/EstablishmentList';
 import EstablishmentDetailsPage from './pages/EstablishmentDetails';
+import FavoritesPage from './pages/Favorites';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/establishments" element={<EstablishmentListPage />} />
         <Route path="/establishment/:id" element={<EstablishmentDetailsPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
       </Routes>
     </Router>

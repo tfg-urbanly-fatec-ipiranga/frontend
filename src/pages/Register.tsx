@@ -10,7 +10,9 @@ const RegisterPage: FC = () => {
   const { registerUser, loading, error } = useAuth();
 
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
     password: '',
     birthDate: '',
@@ -43,16 +45,48 @@ const RegisterPage: FC = () => {
       <main className="register-card">
         <form onSubmit={handleSubmit}>
         <div className="input-group">
-          <label className="input-label">Nome completo</label>
+          <label className="input-label">Primeiro Nome</label>
           <div className="input-wrapper">
             <User size={20} className="input-icon" />
             <input 
               type="text" 
-              name="name"
-              value={formData.name}
+              name="firstName"
+              value={formData.firstName}
               onChange={handleInputChange}
               required
-              placeholder="João Silva" 
+              placeholder="João" 
+              className="input-field" 
+            />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label">Sobrenome</label>
+          <div className="input-wrapper">
+            <User size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              required
+              placeholder="Silva" 
+              className="input-field" 
+            />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label">Nome de usuário</label>
+          <div className="input-wrapper">
+            <User size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              required
+              placeholder="Login" 
               className="input-field" 
             />
           </div>

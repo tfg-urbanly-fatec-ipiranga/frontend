@@ -2,12 +2,15 @@ import { type FC } from 'react';
 import { ArrowLeft, Share2, Heart, Star, Clock, Map as MapIcon, Phone, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
+import { useFavorites } from '../hooks/useFavorites';
 import './EstablishmentDetails.css';
+import React from 'react';
 
 const EstablishmentDetailsPage: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { place, loading, error } = usePlaceDetails(id);
+  const { isFavorite, toggleFavorite } = useFavorites();
   if (loading) {
     return (
       <div className="establishment-details-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -17,10 +20,23 @@ const EstablishmentDetailsPage: FC = () => {
   }
 
   if (error || !place) {
+    const isUnauthorized = error?.toLowerCase().includes('unauthorized') || error?.toLowerCase().includes('401');
     return (
-      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
-        <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
-        <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>Voltar</button>
+      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px', padding: '24px', textAlign: 'center' }}>
+        {isUnauthorized ? (
+          <>
+            <p style={{ fontSize: '18px', color: '#374151' }}>Crie uma conta para ver mais informações</p>
+            <button className="action-button" onClick={() => navigate('/register')} style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '14px 64px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', width: '80%', maxWidth: '320px', flex: 'none' }}>Criar conta</button>
+            <p style={{ fontSize: '14px', color: '#6B7280' }}>
+              Já tem uma conta? <span style={{ color: '#EB6B3D', cursor: 'pointer' }} onClick={() => navigate('/login')}>Entrar</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
+            <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>Voltar</button>
+          </>
+        )}
       </div>
     );
   }
@@ -44,8 +60,11 @@ const EstablishmentDetailsPage: FC = () => {
       <main>
         <section className="hero-section">
           <img src={imageUrl} alt={place.name} className="hero-image" />
-          <button className="floating-favorite">
-            <Heart size={24} fill="none" />
+          <button
+            className={`floating-favorite ${place && isFavorite(place.id) ? 'active' : ''}`}
+            onClick={() => place && toggleFavorite(place.id)}
+          >
+            <Heart size={24} fill={place && isFavorite(place.id) ? 'currentColor' : 'none'} />
           </button>
         </section>
 

@@ -19,7 +19,7 @@ const EditEstablishment: FC = () => {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { tags } = useTags();
-  const { addTag, removeTag } = usePlaceTags(id!);
+  const { addTag, removeTag, loading: loadingTag } = usePlaceTags();
   
 
   useEffect(() => {
@@ -71,6 +71,14 @@ const EditEstablishment: FC = () => {
     );
   }
 
+  if (loadingTag) {
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando Tags...</p>
+      </div>
+    );
+  }
+
   if (errorUpdate) {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
@@ -118,14 +126,14 @@ const EditEstablishment: FC = () => {
       // Adicionar novas
       for (const tagName of activeTags) {
         if (!currentTags.includes(tagName)) {
-          await addTag(tagName);
+          await addTag(tagName, id);
         }
       }
 
       // Remover desmarcadas
       for (const pt of place?.placeTags ?? []) {
         if (!activeTags.includes(pt.tag.name)) {
-          await removeTag(pt.tag.name); // hook cuida do DELETE
+          await removeTag(pt.tag.name, id); // hook cuida do DELETE
         }
       }
 

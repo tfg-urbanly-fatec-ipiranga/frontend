@@ -7,6 +7,8 @@ export const usePlaceReviews = (placeId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+
   useEffect(() => {
     if (!placeId) return;
 
@@ -16,6 +18,13 @@ export const usePlaceReviews = (placeId: string | undefined) => {
       try {
         const response = await api.get<Review[]>(`/reviews/place/${placeId}`);
         setReviews(response.data);
+
+        if (response.data.length > 0) {
+          const sum = response.data.reduce((acc, review) => acc + review.rating, 0);
+          setAverageRating(sum / response.data.length);
+        } else {
+          setAverageRating(null);
+        }
       } catch (err: any) {
         setError(err.response?.data?.message || 'Erro ao carregar avaliações.');
         console.error('Error fetching place reviews:', err);
@@ -27,5 +36,5 @@ export const usePlaceReviews = (placeId: string | undefined) => {
     fetchReviews();
   }, [placeId]);
 
-  return { reviews, loading, error };
+  return { reviews, averageRating, loading, error };
 };

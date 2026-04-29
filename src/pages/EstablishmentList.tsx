@@ -19,7 +19,6 @@ const EstablishmentListPage: FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { places: fetchedPlaces, loading, error } = usePlaces();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { logout, isAuthenticated  } = useAuthContext();
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { tags, loading: tagsLoading } = useTags();

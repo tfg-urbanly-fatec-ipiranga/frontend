@@ -3,6 +3,8 @@ import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Cl
 import { useNavigate } from 'react-router-dom';
 import { useCreatePlace } from '../hooks/useCreatePlace';
 import { useCategories } from '../hooks/useCategories';
+import { useTags } from "../hooks/useTags";
+import { usePlaceTags } from "../hooks/usePlaceTags";
 import './RegisterEstablishment.css';
 
 // Using the generated paths directly in the component for now
@@ -17,6 +19,10 @@ const RegisterEstablishment: FC = () => {
   const navigate = useNavigate();
   const { createPlace, loading: createLoading, error: createError } = useCreatePlace();
   const { categories } = useCategories();
+  const { tags, loading: tagsLoading } = useTags();
+  const { addTag, loading: saveLoading } = usePlaceTags(); // aqui não precisa passar id ainda, pois é cadastro
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+
   
   // Basic Form State
   const [formData, setFormData] = useState({
@@ -24,19 +30,34 @@ const RegisterEstablishment: FC = () => {
     description: '',
     address: '',
     city: '',
-    openingTime: '08:00',
-    closingTime: '18:00',
+    openingTime: '',
+    closingTime: '',
     categoryId: '',
   });
 
-  const [activeTags, setActiveTags] = useState<string[]>([]);
-  const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável', 'Música', 'Rooftop'];
-
-  const toggleTag = (tag: string) => {
-    setActiveTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+  if(tagsLoading){
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Carregando dados para criação...</p>
+      </div>
     );
-  };
+  }
+
+  if(createLoading){
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando estabelecimento...</p>
+      </div>
+    );
+  }
+
+  if(saveLoading){
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando Tags...</p>
+      </div>
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -59,8 +80,13 @@ const RegisterEstablishment: FC = () => {
     }
 
     const createdPlace = await createPlace(payload);
-    
+
     if (createdPlace) {
+      // adiciona tags selecionadas
+      for (const tagName of activeTags) {
+        await addTag(tagName, createdPlace.id); 
+      }
+
       alert('Estabelecimento cadastrado com sucesso!');
       navigate(`/establishment/${createdPlace.id}`);
     }
@@ -99,6 +125,7 @@ const RegisterEstablishment: FC = () => {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
+            required
             placeholder="Descreva o local" 
             className="textarea-element"
             rows={3}
@@ -114,6 +141,7 @@ const RegisterEstablishment: FC = () => {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
+              required
               placeholder="Insira o endereço" 
               className="input-element" 
             />
@@ -129,6 +157,7 @@ const RegisterEstablishment: FC = () => {
               name="city"
               value={formData.city}
               onChange={handleInputChange}
+              required
               placeholder="Insira a cidade" 
               className="input-element" 
             />
@@ -146,6 +175,7 @@ const RegisterEstablishment: FC = () => {
                 value={formData.openingTime}
                 onChange={handleInputChange}
                 required
+                placeholder='08:00'
                 className="input-element" 
               />
             </div>
@@ -160,6 +190,7 @@ const RegisterEstablishment: FC = () => {
                 value={formData.closingTime}
                 onChange={handleInputChange}
                 required
+                placeholder='18:00'
                 className="input-element" 
               />
             </div>
@@ -191,19 +222,23 @@ const RegisterEstablishment: FC = () => {
           <label className="form-label">Palavras-chave / Tags</label>
           <div className="tags-section">
             {tags.map(tag => (
-              <span 
-                key={tag} 
-                className={`tag ${activeTags.includes(tag) ? 'tag-active' : 'tag-inactive'}`}
-                onClick={() => toggleTag(tag)}
+              <span
+                key={tag.id}
+                className={`tag ${activeTags.includes(tag.name) ? 'tag-active' : 'tag-inactive'}`}
+                onClick={() => {
+                  if (activeTags.includes(tag.name)) {
+                    setActiveTags(activeTags.filter(t => t !== tag.name));
+                  } else {
+                    setActiveTags([...activeTags, tag.name]);
+                  }
+                }}
               >
-                {tag}
+                {tag.name}
               </span>
             ))}
-            <button type="button" className="add-tag-button">
-              <Plus size={14} /> Add
-            </button>
           </div>
         </div>
+
 
         <div className="form-group">
           <label className="form-label">Galeria de fotos</label>

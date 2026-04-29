@@ -17,6 +17,7 @@ const EstablishmentDetailsPage: FC = () => {
   const { place, loading: placeLoading, error } = usePlaceDetails(id);
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { photos, loading: photosLoading } = usePlacePhotos(id);
+  //const { reviews, loading: reviewsLoading } = usePlaceReviews(id);
   const { reviews, averageRating, loading: reviewsLoading } = usePlaceReviews(id);
 
   const loading = placeLoading || photosLoading || reviewsLoading;
@@ -63,11 +64,14 @@ const EstablishmentDetailsPage: FC = () => {
     ? `${place.openingTime} - ${place.closingTime}`
     : 'Horário não disponível';
 
+
+  
   // Rating
   const ratingDisplay = averageRating !== null
     ? averageRating.toFixed(1)
     : '0';
   const reviewCount = reviews.length;
+  
 
   return (
     <div className="establishment-details-page">

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import api from "../services/api";
 
-export const usePlaceTags = (placeId: string) => {
+export const usePlaceTags = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addTag = async (tagName: string) => {
+  const addTag = async (tagName: string, placeId: string) => {
     try {
       setLoading(true);
       await api.post(`/places/${placeId}/tags`, { tagName });
@@ -16,7 +16,7 @@ export const usePlaceTags = (placeId: string) => {
     }
   };
 
-  const removeTag = async (tagName: string) => {
+  const removeTag = async (tagName: string, placeId: string) => {
     try {
         setLoading(true);
         const response = await api.get(`/tags/byname/${tagName}`);

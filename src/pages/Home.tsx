@@ -1,13 +1,36 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, type FC } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
 import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAuthContext } from "../context/AuthContext";
+import { usePlaces } from '../hooks/usePlaces';
 import './Home.css';
 import api from '../services/api';
 import BottomNav from '../components/BottomNav';
+
+// Handler for Map Bounds
+const MapBoundsHandler: FC<{ onBoundsChange: (bounds: L.LatLngBounds) => void }> = ({ onBoundsChange }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Initial bounds
+    onBoundsChange(map.getBounds());
+    
+    // Update on move/zoom
+    const handleMoveEnd = () => {
+      onBoundsChange(map.getBounds());
+    };
+    
+    map.on('moveend', handleMoveEnd);
+    return () => {
+      map.off('moveend', handleMoveEnd);
+    };
+  }, [map, onBoundsChange]);
+
+  return null;
+};
 
 // Fix for default marker icon issues in Leaflet with React
 // @ts-ignore
@@ -147,7 +170,12 @@ const HomePage: FC = () => {
   const [isClearFlashing, setIsClearFlashing] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Mantenha os estabelecimentos em um cache (buscados via hook usePlaces)
+  const { places: allPlaces } = usePlaces();
+
   const { logout, isAuthenticated  } = useAuthContext();
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
@@ -215,7 +243,16 @@ const HomePage: FC = () => {
     } else if (hasChips) {
       result = filteredPlaces;
     } else {
-      result = [];
+      // Ao abrir o app, sem haver feito nenhuma busca ou filtragem de tags,
+      // todos os estabelecimentos da área visível no mapa devem aparecer.
+      if (!allPlaces || !mapBounds) {
+        result = [];
+      } else {
+        result = allPlaces.filter(p => {
+          if (p.latitude == null || p.longitude == null) return false;
+          return mapBounds.contains([p.latitude, p.longitude]);
+        });
+      }
     }
 
     if (selectedCities.length > 0) {
@@ -244,20 +281,17 @@ const HomePage: FC = () => {
       ? activeChips.filter(c => c !== tagName)
       : [...activeChips, tagName];
 
-    console.log('[chip click]', tagName, '| isActive:', isActive, '| newActive:', newActive);
     setActiveChips(newActive);
 
     if (!isActive) {
       try {
-        console.log('[fetch] GET /places/findByTag?tag=', tagName);
         const res = await api.get<Place[]>('/places/findByTag', { params: { tag: tagName } });
-        console.log('[fetch] resultado:', res.data);
         setFilteredPlaces(prev => {
           const ids = new Set(prev.map(p => p.id));
           return [...prev, ...res.data.filter(p => !ids.has(p.id))];
         });
       } catch (err: any) {
-        console.error('[fetch] erro ao buscar places por tag:', err?.response?.status, err?.response?.data ?? err?.message);
+        // silent
       }
     } else {
       if (newActive.length === 0) {
@@ -269,10 +303,9 @@ const HomePage: FC = () => {
           );
           const allPlaces = results.flatMap(r => r.data);
           const unique = Array.from(new Map(allPlaces.map(p => [p.id, p])).values());
-          console.log('[fetch] places após remoção de chip:', unique);
           setFilteredPlaces(unique);
         } catch (err: any) {
-          console.error('[fetch] erro ao atualizar places:', err?.response?.status, err?.response?.data ?? err?.message);
+          // silent
         }
       }
     }
@@ -295,8 +328,11 @@ const HomePage: FC = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
+          <MapBoundsHandler onBoundsChange={setMapBounds} />
+          
           {displayedPlaces
             .filter(place => place.latitude != null && place.longitude != null)
+            .slice(0, 20)
             .map(place => (
               <Marker key={place.id} position={[place.latitude, place.longitude]}>
                 <Popup minWidth={220} maxWidth={260} className="map-popup-leaflet">

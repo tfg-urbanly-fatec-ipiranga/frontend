@@ -1,4 +1,4 @@
-import React, { useState, type FC } from 'react';
+import React, { useEffect, useState, type FC } from 'react';
 import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './EditEstablishment.css';
@@ -6,29 +6,41 @@ import { useUpdatePlace } from '../hooks/useUpdatePlace';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import { useCategories } from '../hooks/useCategories';
 import api from '../services/api';
+import { useTags } from "../hooks/useTags";
+import { usePlaceTags } from "../hooks/usePlaceTags";
 
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { place } = usePlaceDetails(id);
-  const { updatePlace, loading, error } = useUpdatePlace();
+  const { place, loading: placeLoading, error: placeError } = usePlaceDetails(id);
+  const { updatePlace, loading: loadingUpdate, error: errorUpdate } = useUpdatePlace();
   const { categories } = useCategories();
-  const [activeTags, setActiveTags] = useState<string[]>(['Natural', 'Aconchegante']);
+  const [activeTags, setActiveTags] = useState<string[]>(
+    place?.placeTags?.map(pt => pt.tag.name) ?? []
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const { tags } = useTags();
+  const { addTag, removeTag, loading: loadingTag } = usePlaceTags();
   
-  const tags = ['Vegano', 'Natural', 'Aconchegante', 'Saudável'];
 
-  const toggleTag = (tag: string) => {
-    if (activeTags.includes(tag)) {
-      setActiveTags(activeTags.filter(t => t !== tag));
+  useEffect(() => {
+    if (place?.placeTags && activeTags.length === 0) {
+      setActiveTags(place.placeTags.map(pt => pt.tag.name));
+    }
+  }, [place]);
+
+
+  const toggleTag = (tagName: string) => {
+    if (activeTags.includes(tagName)) {
+      setActiveTags(activeTags.filter(t => t !== tagName));
     } else {
-      setActiveTags([...activeTags, tag]);
+      setActiveTags([...activeTags, tagName]);
     }
   };
 
-  if (loading) {
+  if (placeLoading) {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <p>Carregando dados do estabelecimento...</p>
@@ -36,10 +48,44 @@ const EditEstablishment: FC = () => {
     );
   }
 
-  if (error || !place) {
+  if (placeError) {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
-        <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
+        <p style={{ color: 'red' }}>{placeError}</p>
+        <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
+      </div>
+    );
+  }
+
+  if (!place) {
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
+        <p style={{ color: 'red' }}>Estabelecimento não encontrado.</p>
+        <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
+      </div>
+    );
+  }
+
+  if (loadingUpdate) {
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando alterações...</p>
+      </div>
+    );
+  }
+
+  if (loadingTag) {
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando Tags...</p>
+      </div>
+    );
+  }
+
+  if (errorUpdate) {
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
+        <p style={{ color: 'red' }}>{errorUpdate}</p>
         <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
       </div>
     );
@@ -74,7 +120,26 @@ const EditEstablishment: FC = () => {
 
     const updated = await updatePlace(id, payload);
 
+    
+
     if (updated) {
+
+      const currentTags = place?.placeTags?.map(pt => pt.tag.name) ?? [];
+
+      // Adicionar novas
+      for (const tagName of activeTags) {
+        if (!currentTags.includes(tagName)) {
+          await addTag(tagName, id);
+        }
+      }
+
+      // Remover desmarcadas
+      for (const pt of place?.placeTags ?? []) {
+        if (!activeTags.includes(pt.tag.name)) {
+          await removeTag(pt.tag.name, id); // hook cuida do DELETE
+        }
+      }
+
       alert('Atualizado com sucesso!');
       navigate(`/establishments`);
     }
@@ -176,17 +241,14 @@ const EditEstablishment: FC = () => {
           <label className="form-label">Palavras-chave / Tags</label>
           <div className="tags-section">
             {tags.map(tag => (
-              <span 
-                key={tag} 
-                className={`tag ${activeTags.includes(tag) ? 'tag-active' : 'tag-inactive'}`}
-                onClick={() => toggleTag(tag)}
+              <span
+                key={tag.id}
+                className={`tag ${activeTags.includes(tag.name) ? 'tag-active' : 'tag-inactive'}`}
+                onClick={() => toggleTag(tag.name)}
               >
-                {tag}
+                {tag.name}
               </span>
             ))}
-            <button className="add-tag-button">
-              <Plus size={14} /> Adicionar
-            </button>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from "../context/AuthContext";
+import { useTags } from '../hooks/useTags';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
 import BottomNav from '../components/BottomNav';
@@ -14,12 +15,13 @@ const EstablishmentListPage: FC = () => {
   const location = useLocation();
   const statePlaces = (location.state as { places?: Place[] } | null)?.places;
 
-  const [activeChips, setActiveChips] = useState<string[]>(['VEGAN']);
+  const [activeChips, setActiveChips] = useState<string[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { places: fetchedPlaces, loading, error } = usePlaces();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { logout, isAuthenticated  } = useAuthContext();
+  const { isFavorite, isToggling, toggleFavorite } = useFavorites();
+  const { tags, loading: tagsLoading } = useTags();
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
   
@@ -30,11 +32,16 @@ const EstablishmentListPage: FC = () => {
     return firstInitial + lastInitial;
   };
 
+
   // Usa os places vindos do router state (busca da home) ou os buscados da API
-  const places = statePlaces ?? fetchedPlaces;
+  const allPlaces = statePlaces ?? fetchedPlaces;
 
-  const chips = ['VEGAN', 'COZY', 'ROOFTOP', 'FUN'];
-
+  // Filtra por chips ativos; se nenhum selecionado, exibe todos
+  const places = activeChips.length === 0
+    ? allPlaces
+    : allPlaces?.filter(place =>
+        place.placeTags?.some(pt => activeChips.includes(pt.tag.name))
+      );
 
 
   const toggleChip = (chip: string) => {
@@ -136,22 +143,23 @@ const EstablishmentListPage: FC = () => {
         </div>
 
         <div className="chips-scroll">
-          {chips.map(chip => (
-            <div 
-              key={chip} 
-              className={`chip ${activeChips.includes(chip) ? 'active' : ''}`}
-              onClick={() => toggleChip(chip)}
+          {tagsLoading && <span style={{ fontSize: '13px', color: '#9CA3AF', padding: '6px 0' }}>Carregando tags...</span>}
+          {tags.map(tag => (
+            <div
+              key={tag.id}
+              className={`chip ${activeChips.includes(tag.name) ? 'active' : ''}`}
+              onClick={() => toggleChip(tag.name)}
             >
-              {chip}
+              {tag.name}
             </div>
           ))}
         </div>
       </section>
 
       <main className="list-content">
-        {statePlaces && (
+        {places && (
           <div style={{ padding: '8px 16px 0', fontSize: '13px', color: '#6B7280' }}>
-            {statePlaces.length} resultado{statePlaces.length !== 1 ? 's' : ''} da sua busca
+            {places.length} resultado{places.length !== 1 ? 's' : ''}{statePlaces ? ' da sua busca' : ''}{activeChips.length > 0 ? ` filtrado${places.length !== 1 ? 's' : ''}` : ''}
           </div>
         )}
         {!statePlaces && loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
@@ -167,13 +175,16 @@ const EstablishmentListPage: FC = () => {
               </div>
               <p className="card-description">{place.description}</p>
               <div className="card-tags">
-                {place.tags?.map(tag => (
-                  <span key={tag.id} className="card-tag">{tag.name}</span>
+                {place.placeTags?.map(pt => (
+                  <span key={pt.tag.name} className="card-tag">{pt.tag.name}</span>
                 ))}
               </div>
               <button
                 className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(place.id); }}
+                disabled={isToggling(place.id)}
+                aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
               >
                 <Heart size={20} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
               </button>
@@ -190,3 +201,4 @@ const EstablishmentListPage: FC = () => {
 };
 
 export default EstablishmentListPage;
+

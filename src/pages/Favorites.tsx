@@ -2,13 +2,26 @@ import { useState, useRef, useEffect, type FC } from 'react';
 import { Search, Heart, ArrowLeft, User, Menu, Plus, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
+import { useAuthContext } from "../context/AuthContext";
 import './Favorites.css';
 import BottomNav from '../components/BottomNav';
 import React from 'react';
 
 const FavoritesPage: FC = () => {
   const navigate = useNavigate();
-  const { favorites, loading, error, isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, loading, error, isFavorite, isToggling, toggleFavorite } = useFavorites();
+
+  const { logout, isAuthenticated  } = useAuthContext();
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
+  
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return "";
+    const firstInitial = firstName ? firstName[0].toUpperCase() : "";
+    const lastInitial = lastName ? lastName[0].toUpperCase() : "";
+    return firstInitial + lastInitial;
+  };
+
 
   const [search, setSearch] = useState('');
   const [showMenu, setShowMenu] = useState(false);
@@ -36,13 +49,33 @@ const FavoritesPage: FC = () => {
         </button>
         <div className="brand-text">Urbanly</div>
         <div className="header-right">
-          <div className="profile-pic">
-            <img
-              src="https://ui-avatars.com/api/?name=Admin+User&background=EB6B3D&color=fff"
-              alt="Profile"
-              style={{ width: '100%', borderRadius: '50%' }}
-            />
-          </div>
+          {isAuthenticated && (
+            <div className="profile-pic">
+              {parsedUser?.avatar ? (
+                <img
+                  src={parsedUser.avatar}
+                  alt="Profile"
+                  style={{ width: "100%", borderRadius: "50%" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: "#EB6B3D",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {getInitials(parsedUser?.firstName, parsedUser?.lastName)}
+                </div>
+              )}
+            </div>
+          )}
           <div className="menu-container" ref={menuRef}>
             <button className="menu-button" onClick={() => setShowMenu(!showMenu)}>
               <Menu size={24} />
@@ -62,7 +95,8 @@ const FavoritesPage: FC = () => {
                   onClick={() => {
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    navigate('/login');
+                    logout();
+                    window.location.reload();
                   }}
                   style={{ color: '#ef4444' }}
                 >
@@ -143,7 +177,7 @@ const FavoritesPage: FC = () => {
               )}
               {item.place.category && (
                 <div className="fav-card-tags">
-                  <span className="fav-card-tag">{item.place.category}</span>
+                  <span className="fav-card-tag">{item.place.category.name}</span>
                 </div>
               )}
             </div>
@@ -153,6 +187,9 @@ const FavoritesPage: FC = () => {
                 e.stopPropagation();
                 toggleFavorite(item.place.id);
               }}
+              disabled={isToggling(item.place.id)}
+              aria-label={isFavorite(item.place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              style={{ opacity: isToggling(item.place.id) ? 0.5 : 1 }}
             >
               <Heart size={20} fill={isFavorite(item.place.id) ? 'currentColor' : 'none'} />
             </button>

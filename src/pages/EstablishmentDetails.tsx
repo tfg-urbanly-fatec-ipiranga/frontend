@@ -33,24 +33,49 @@ const EstablishmentDetailsPage: FC = () => {
   if (error || !place) {
     const isUnauthorized = error?.toLowerCase().includes('unauthorized') || error?.toLowerCase().includes('401');
     return (
-      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px', padding: '24px', textAlign: 'center' }}>
-        {isUnauthorized ? (
-          <>
-            <p style={{ fontSize: '18px', color: '#374151' }}>Crie uma conta para ver mais informações</p>
-            <button className="action-button" onClick={() => navigate('/register')} style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '14px 64px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', width: '80%', maxWidth: '320px', flex: 'none' }}>Criar conta</button>
-            <p style={{ fontSize: '14px', color: '#6B7280' }}>
-              Já tem uma conta? <span style={{ color: '#EB6B3D', cursor: 'pointer' }} onClick={() => navigate('/login')}>Entrar</span>
-            </p>
-          </>
-        ) : (
-          <>
-            <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
-            <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>Voltar</button>
-          </>
-        )}
+      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        
+        {/* Botão de voltar no topo */}
+        <header className="details-force-login-header">
+          <button className="icon-button back-button-force-login" onClick={() => navigate(-1)}>
+            <ArrowLeft size={20} />
+          </button>
+          <span className="brand-text-force-login">Urbanly</span>
+        </header>
+
+        <main>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '24px', textAlign: 'center' }}>
+            {isUnauthorized ? (
+              <>
+                <p style={{ fontSize: '18px', color: '#374151' }}>Crie uma conta para ver mais informações</p>
+                <button
+                  className="action-button"
+                  onClick={() => navigate('/register')}
+                  style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '14px 64px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', width: '80%', maxWidth: '320px' }}
+                >
+                  Criar conta
+                </button>
+                <p style={{ fontSize: '14px', color: '#6B7280' }}>
+                  Já tem uma conta?{" "}
+                  <span style={{ color: '#EB6B3D', cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                    Entrar
+                  </span>
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ color: 'red' }}>{error || 'Estabelecimento não encontrado.'}</p>
+                <button className="action-button" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>
+                  Voltar
+                </button>
+              </>
+            )}
+          </div>
+        </main>
       </div>
     );
   }
+
 
   // Resolve image: prefer primary photo, then first photo, then fallback
   const primaryPhoto = photos.find(p => p.isPrimary) ?? photos[0];

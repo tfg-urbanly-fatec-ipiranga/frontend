@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 
 interface AuthContextType {
@@ -19,6 +19,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     setIsAuthenticated(false);
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      login();
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>

@@ -105,9 +105,28 @@ const EstablishmentDetailsPage: FC = () => {
           <ArrowLeft size={20} />
         </button>
         <span className="brand-text">Urbanly</span>
-        <button className="icon-button share-button" onClick={() => navigate(`/edit-establishment/${id}`)}>
-          <Settings size={20} />
-        </button>
+        {(() => {
+          try {
+            const stored = localStorage.getItem("user");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              const role = parsed?.user?.role || parsed?.role;
+              if (role === "ADMIN") {
+                return (
+                  <button
+                    className="icon-button share-button"
+                    onClick={() => navigate(`/edit-establishment/${id}`)}
+                  >
+                    <Settings size={20} />
+                  </button>
+                );
+              }
+            }
+          } catch {
+            // se der erro no parse, não renderiza nada
+          }
+          return <div style={{ width: "20px" }} />; // placeholder vazio para manter alinhamento
+        })()}
       </header>
 
       <main>

@@ -6,6 +6,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useTags } from "../hooks/useTags";
 import { usePlaceTags } from "../hooks/usePlaceTags";
 import './RegisterEstablishment.css';
+import { toast } from 'react-toastify';
 
 // Using the generated paths directly in the component for now
 // In a real app, these would be proper imports or URLs
@@ -87,7 +88,7 @@ const RegisterEstablishment: FC = () => {
         await addTag(tagName, createdPlace.id); 
       }
 
-      alert('Estabelecimento cadastrado com sucesso!');
+      toast.success('Estabelecimento cadastrado com sucesso!');
       navigate(`/establishment/${createdPlace.id}`);
     }
   };

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
 import RegisterPage from './pages/Register';
 import RegisterEstablishmentPage from './pages/RegisterEstablishment';
 import LoginPage from './pages/Login';
@@ -12,6 +13,7 @@ import InactiveRecordsPage from './pages/InactiveRecords';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import React from "react";
+import 'react-toastify/dist/ReactToastify.css';
 
 function isAdmin(): boolean {
   try {
@@ -50,6 +52,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
         </Routes>
       </Router>
+      <ToastContainer position="top-center" autoClose={3000} />
     </AuthProvider>
   );
 }

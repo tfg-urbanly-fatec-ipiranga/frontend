@@ -3,6 +3,7 @@ import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, ArrowRight, Calendar } from '
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './Register.css';
+import { toast } from 'react-toastify';
 
 const RegisterPage: FC = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const RegisterPage: FC = () => {
     const newUser = await registerUser(formData);
     
     if (newUser) {
-      alert('Usuário cadastrado com sucesso!');
+      toast.success('Usuário cadastrado com sucesso!');
       navigate('/login');
     }
   };

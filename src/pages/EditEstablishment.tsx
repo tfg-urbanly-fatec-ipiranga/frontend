@@ -8,6 +8,7 @@ import { useCategories } from '../hooks/useCategories';
 import api from '../services/api';
 import { useTags } from "../hooks/useTags";
 import { usePlaceTags } from "../hooks/usePlaceTags";
+import { toast } from 'react-toastify';
 
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ const EditEstablishment: FC = () => {
         }
       }
 
-      alert('Atualizado com sucesso!');
+      toast.success('Atualizado com sucesso!');
       navigate(`/establishments`);
     }
   };

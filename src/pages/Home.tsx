@@ -57,6 +57,7 @@ interface Place {
   placeTags?: Array<{ tag: { name: string } }>;
   latitude: number;
   longitude: number;
+  avgRating?: number;
 }
 
 interface PlacePhoto {
@@ -170,8 +171,18 @@ const HomePage: FC = () => {
   const [isClearFlashing, setIsClearFlashing] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
+  const ratingOptions = [
+    { label: 'Sem avaliação', value: 'none' },
+    { label: '1+', value: '1-2' },
+    { label: '2+', value: '2-3' },
+    { label: '3+', value: '3-4' },
+    { label: '4+', value: '4-5' },
+  ];
   
   // Mantenha os estabelecimentos em um cache (buscados via hook usePlaces)
   const { places: allPlaces } = usePlaces();
@@ -204,8 +215,11 @@ const HomePage: FC = () => {
       setSearchPlaces([]);
       setFilterOpen(false);
       setSelectedCities([]);
+      setIsSearching(false);
       return;
     }
+
+    setIsSearching(true);
 
     debounceRef.current = setTimeout(async () => {
       try {
@@ -215,6 +229,8 @@ const HomePage: FC = () => {
         setSearchPlaces(res.data);
       } catch {
         setSearchPlaces([]);
+      } finally {
+        setIsSearching(false);
       }
     }, 500);
 
@@ -228,6 +244,42 @@ const HomePage: FC = () => {
     () => [...new Set(searchPlaces.map(p => p.city).filter((c): c is string => Boolean(c)))],
     [searchPlaces]
   );
+
+  const availableCategories = useMemo(
+    () => [...new Set(searchPlaces.map(p => p.category?.name).filter((c): c is string => Boolean(c))),],
+    [searchPlaces]
+  );
+
+  const availableRatings = useMemo(() => {
+    if (!searchPlaces.length) return [];
+
+    return ratingOptions.filter(option => {
+      return searchPlaces.some(place => {
+        const r = place.avgRating;
+
+        switch (option.value) {
+          case 'none':
+            return r == null;
+
+          case '1-2':
+            return r != null && r >= 1 && r < 2;
+
+          case '2-3':
+            return r != null && r >= 2 && r < 3;
+
+          case '3-4':
+            return r != null && r >= 3 && r < 4;
+
+          case '4-5':
+            return r != null && r >= 4 && r <= 5;
+
+          default:
+            return false;
+        }
+      });
+    });
+  }, [searchPlaces]);
+
 
   // Lógica combinada: busca + chips + filtros avançados
   const displayedPlaces = (() => {
@@ -257,6 +309,38 @@ const HomePage: FC = () => {
 
     if (selectedCities.length > 0) {
       result = result.filter(p => p.city && selectedCities.includes(p.city));
+    }
+
+    if (selectedCategories.length > 0) {
+      result = result.filter(p => p.category?.name && selectedCategories.includes(p.category.name));
+    }
+
+    if (selectedRatings.length > 0) {
+      result = result.filter(place => {
+        const r = place.avgRating;
+
+        return selectedRatings.some(range => {
+          switch (range) {
+            case 'none':
+              return r == null;
+
+            case '1-2':
+              return r != null && r >= 1 && r < 2;
+
+            case '2-3':
+              return r != null && r >= 2 && r < 3;
+
+            case '3-4':
+              return r != null && r >= 3 && r < 4;
+
+            case '4-5':
+              return r != null && r >= 4 && r <= 5;
+
+            default:
+              return false;
+          }
+        });
+      });
     }
 
     return result;
@@ -393,51 +477,116 @@ const HomePage: FC = () => {
               onChange={e => setSearchTerm(e.target.value)}
             />
             <button
+            disabled={isSearching}
               className={`filter-button${searchPlaces.length > 0 ? ' filter-button--active' : ''}`}
-              onClick={() => { if (searchPlaces.length > 0) setFilterOpen(o => !o); }}
-              title={searchPlaces.length > 0 ? 'Filtros avançados' : 'Faça uma busca para usar filtros'}
+              onClick={() => { if (searchTerm.trim().length > 0) { setFilterOpen(o => !o); }}}
+              title={searchTerm.trim().length > 0 ? 'Filtros avançados' : 'Faça uma busca para usar filtros'}
             >
-              <SlidersHorizontal size={20} />
+              {isSearching ? (
+                <div className="spinner" />
+              ) : (
+                <SlidersHorizontal size={20} />
+              )}
             </button>
           </div>
 
-          {filterOpen && searchPlaces.length > 0 && (
+          {filterOpen && searchTerm.trim().length > 0 && (
             <div className="filter-panel">
               <div className="filter-panel-header">
                 <span className="filter-panel-title">Filtros Avançados</span>
                 <button className="filter-panel-close" onClick={() => setFilterOpen(false)}>✕</button>
               </div>
 
-              {availableCities.length > 0 ? (
-                <div className="filter-section">
-                  <div className="filter-section-title">Cidade</div>
-                  <div className="filter-options">
-                    {availableCities.map(city => (
-                      <label key={city} className="filter-option">
-                        <input
-                          type="checkbox"
-                          checked={selectedCities.includes(city)}
-                          onChange={() =>
-                            setSelectedCities(prev =>
-                              prev.includes(city)
-                                ? prev.filter(c => c !== city)
-                                : [...prev, city]
-                            )
-                          }
-                        />
-                        <span>{city}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="filter-empty">Nenhum filtro disponível para esses resultados.</p>
-              )}
+          {availableCities.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-section-title">Cidade</div>
+              <div className="filter-options">
+                {availableCities.map(city => (
+                  <label key={city} className="filter-option">
+                    <input
+                      type="checkbox"
+                      checked={selectedCities.includes(city)}
+                      onChange={() =>
+                        setSelectedCities(prev =>
+                          prev.includes(city)
+                            ? prev.filter(c => c !== city)
+                            : [...prev, city]
+                        )
+                      }
+                    />
+                    <span>{city}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {availableCategories.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-section-title">Categoria</div>
+              <div className="filter-options">
+                {availableCategories.map(category => (
+                  <label key={category} className="filter-option">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(category)}
+                      onChange={() =>
+                        setSelectedCategories(prev =>
+                          prev.includes(category)
+                            ? prev.filter(c => c !== category)
+                            : [...prev, category]
+                        )
+                      }
+                    />
+                    <span>{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {availableRatings.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-section-title">Avaliação</div>
+
+              <div className="filter-options">
+                {availableRatings.map(option => (
+                  <label key={option.value} className="filter-option">
+                    <input
+                      type="checkbox"
+                      checked={selectedRatings.includes(option.value)}
+                      onChange={() =>
+                        setSelectedRatings(prev =>
+                          prev.includes(option.value)
+                            ? prev.filter(v => v !== option.value)
+                            : [...prev, option.value]
+                        )
+                      }
+                    />
+
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ color: '#FBBF24' }}>★</span>
+                      <span>{option.label}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {availableCities.length === 0 && availableCategories.length === 0 && (
+            <p className="filter-empty">
+              Nenhum filtro disponível para esses resultados.
+            </p>
+          )}
 
               <div className="filter-actions">
                 <button
                   className="filter-btn-clear"
-                  onClick={() => setSelectedCities([])}
+                  onClick={() => {
+                    setSelectedCities([])
+                    setSelectedCategories([]);
+                  }}             
                 >
                   Limpar
                 </button>

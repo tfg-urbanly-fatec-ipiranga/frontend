@@ -25,4 +25,5 @@ export interface Place {
   placeTags?: PlaceTag[];
   // kept for backward compat with older code that may map tags manually
   photos?: any;
+  avgRating?: number;
 }

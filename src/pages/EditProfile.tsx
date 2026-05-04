@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef, type FC } from 'react';
+import React, { useState, useEffect, useRef, type FC, type FormEvent } from 'react';
 import { ArrowLeft, User, AtSign, Mail, Lock, Calendar, Camera, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUploadAvatar } from '../hooks/useUploadAvatar';
 import { useAuthContext } from "../context/AuthContext";
+import { toast } from 'react-toastify';
 import './EditProfile.css';
+//import { useAuth } from '../hooks/useAuth';
 
 const EditProfilePage: FC = () => {
   const navigate = useNavigate();
+  //const { registerUser, loading: loadingAuth, error: errorAuth } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { uploadAvatar, loading: uploadingAvatar, error: avatarError } = useUploadAvatar();
@@ -15,9 +18,10 @@ const EditProfilePage: FC = () => {
   const { logout } = useAuthContext();
 
   const [formData, setFormData] = useState({
-    name: 'Alisson Geovani',
-    username: 'alissongeovani',
-    email: 'alisson@example.com',
+    firstName: '',
+    lastName: '',
+    username: '',
+    email: '',
     birthDate: ''
   });
 
@@ -28,7 +32,8 @@ const EditProfilePage: FC = () => {
       const user = parsed.user || parsed;
       setFormData(prev => ({
         ...prev,
-        name: [user.firstName, user.lastName].filter(Boolean).join(' ') || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         username: user.username || '',
         email: user.email || '',
         birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
@@ -50,7 +55,7 @@ const EditProfilePage: FC = () => {
     const authUser = parsed?.user || parsed;
     
     if (!authUser || !authUser.id) {
-      alert("Usuário não logado. Faça o login primeiro!");
+      toast.error('Usuário não logado. Faça o login primeiro!');
       navigate('/login');
       return;
     }
@@ -64,6 +69,31 @@ const EditProfilePage: FC = () => {
       }
     }
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    console.log('submit 1', isEditing);
+    e.preventDefault();
+
+    setIsEditing(false);
+    
+    //const newUser = await registerUser(formData);
+      
+    //if (newUser) {
+    //  toast.success('Usuário cadastrado com sucesso!');
+    //  navigate('/login');
+    //}
+  };
+
+  const handleEditing = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault(); // impede submit
+    setIsEditing(true);
+  };
+  
 
   return (
     <div className="edit-profile-page">
@@ -101,17 +131,36 @@ const EditProfilePage: FC = () => {
           </p>
         </div>
 
+        <form onSubmit={handleSubmit}>
         <div className="edit-form">
           <div className="form-group">
-            <label className="form-label">Nome completo</label>
+            <label className="form-label">Primeiro nome</label>
             <div className={`input-wrapper ${!isEditing ? 'disabled' : ''}`}>
               <User size={20} className="input-icon" />
               <input 
                 type="text" 
-                value={formData.name} 
+                value={formData.firstName} 
                 disabled={!isEditing} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                 className="input-field" 
+                required
+                placeholder='João'
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Sobrenome</label>
+            <div className={`input-wrapper ${!isEditing ? 'disabled' : ''}`}>
+              <User size={20} className="input-icon" />
+              <input 
+                type="text" 
+                value={formData.lastName} 
+                disabled={!isEditing} 
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                className="input-field"
+                required
+                placeholder='Silva'
               />
             </div>
           </div>
@@ -126,6 +175,8 @@ const EditProfilePage: FC = () => {
                 disabled={!isEditing}
                 onChange={(e) => setFormData({...formData, username: e.target.value})}
                 className="input-field" 
+                required
+                placeholder='username'
               />
             </div>
           </div>
@@ -140,6 +191,8 @@ const EditProfilePage: FC = () => {
                 disabled={!isEditing}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="input-field" 
+                placeholder='email@provider.com'
+                required
               />
             </div>
           </div>
@@ -153,8 +206,12 @@ const EditProfilePage: FC = () => {
                 defaultValue="********" 
                 disabled={!isEditing}
                 className="input-field" 
+                required
+                minLength={6}
+                placeholder="********" 
               />
               <button 
+                type="button"
                 className="password-toggle" 
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -169,32 +226,37 @@ const EditProfilePage: FC = () => {
               <Calendar size={20} className="input-icon" />
               <input 
                 type="date" 
+                name='email'
                 value={formData.birthDate} 
                 disabled={!isEditing}
                 onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
                 className="input-field" 
                 style={{ paddingRight: '12px' }}
+                required
               />
             </div>
           </div>
 
           {isEditing ? (
-            <button className="save-button" onClick={() => setIsEditing(false)}>
+            <button type="submit" className="save-button">
               Salvar alterações <ArrowRight size={20} />
             </button>
           ) : (
-            <button className="save-button" onClick={() => setIsEditing(true)} style={{ backgroundColor: '#6B7280' }}>
+            <button type="button" className="edit-button" onClick={handleEditing} style={{ backgroundColor: '#6B7280' }}>
               Editar Perfil <ArrowRight size={20} />
             </button>
           )}
+        </div>
+        </form>
 
-          <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
+        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
             <button 
               type="button"
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 logout();
+                toast.success('Deslogado com sucesso!');
                 navigate('/home');
               }}
               style={{
@@ -212,8 +274,8 @@ const EditProfilePage: FC = () => {
               <User size={20} /> Encerrar Sessão
             </button>
           </div>
-        </div>
       </main>
+      
     </div>
   );
 };

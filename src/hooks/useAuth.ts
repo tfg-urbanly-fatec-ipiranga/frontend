@@ -37,5 +37,21 @@ export const useAuth = () => {
     }
   };
 
-  return { registerUser, loginUser, loading, error };
+  const updateUser = async (id: string, userData: any) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || 'Erro ao atualizar usuário';
+    setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+    console.error('Error updating user:', err);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+  return { registerUser, loginUser, updateUser, loading, error };
 };

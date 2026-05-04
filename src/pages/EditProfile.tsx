@@ -5,11 +5,11 @@ import { useUploadAvatar } from '../hooks/useUploadAvatar';
 import { useAuthContext } from "../context/AuthContext";
 import { toast } from 'react-toastify';
 import './EditProfile.css';
-//import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 
 const EditProfilePage: FC = () => {
   const navigate = useNavigate();
-  //const { registerUser, loading: loadingAuth, error: errorAuth } = useAuth();
+  const { updateUser, loading: loadingAuth, error: errorAuth } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { uploadAvatar, loading: uploadingAvatar, error: avatarError } = useUploadAvatar();
@@ -70,27 +70,41 @@ const EditProfilePage: FC = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { name, value } = e.target;
-      setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = async (e: FormEvent) => {
-    console.log('submit 1', isEditing);
     e.preventDefault();
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const userUp = parsed.user || parsed;
+      const formDataUp = {
+        firstName: userUp.firstName || '',
+        lastName: userUp.lastName || '',
+        username: userUp.username || '',
+        email: userUp.email || '',
+        birthDate: userUp.birthDate ? new Date(userUp.birthDate).toISOString().split('T')[0] : ''
+      };
 
-    setIsEditing(false);
-    
-    //const newUser = await registerUser(formData);
-      
-    //if (newUser) {
-    //  toast.success('Usuário cadastrado com sucesso!');
-    //  navigate('/login');
-    //}
+      if (JSON.stringify(formData) === JSON.stringify(formDataUp)) {
+        return toast.warn('Usuário não atualizado! Nenhum dado alterado!');
+      }
+
+      const updatedUser = await updateUser(userUp.id, formData);
+
+      if(updatedUser) {
+        toast.success('Usuário atualziado com sucesso!');
+        setIsEditing(false);
+        localStorage.setItem('user', JSON.stringify({...parsed, user: { ...parsed.user , ...updatedUser}}));
+      }
+    } else {
+      toast.warning('Usuário não logado! Se logue para utilizar essa função!');
+      navigate('/home');
+      setIsEditing(false);
+      return;
+    }
   };
 
   const handleEditing = async (e?: React.MouseEvent<HTMLButtonElement>) => {
-    e?.preventDefault(); // impede submit
+    e?.preventDefault();
     setIsEditing(true);
   };
   

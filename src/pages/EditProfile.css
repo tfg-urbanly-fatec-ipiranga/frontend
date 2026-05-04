@@ -218,3 +218,26 @@
 .save-button:active {
   transform: scale(0.98);
 }
+
+.edit-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(240, 93, 36, 0.3);
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.edit-button:active {
+  transform: scale(0.98);
+}

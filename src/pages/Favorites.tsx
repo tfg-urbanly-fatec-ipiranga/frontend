@@ -47,7 +47,7 @@ const FavoritesPage: FC = () => {
         <button className="back-button" onClick={() => navigate('/home')}>
           <ArrowLeft size={24} />
         </button>
-        <div className="brand-text">Urbanly</div>
+        <div className="brand-text" onClick={() => navigate('/home')}>Urbanly</div>
         <div className="header-right">
           {isAuthenticated && (
             <div className="profile-pic">

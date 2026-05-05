@@ -170,6 +170,7 @@ const HomePage: FC = () => {
   const [loadingTags, setLoadingTags] = useState(true);
   const [isClearFlashing, setIsClearFlashing] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [showEasterEggModal, setShowEasterEggModal] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
@@ -431,7 +432,7 @@ const HomePage: FC = () => {
       {/* UI Overlays */}
       <div className="home-overlay">
       <header className="home-header">
-        <div className="brand-text">Urbanly</div>
+        <div className="brand-text" onClick={()=> setShowEasterEggModal(true)} >Urbanly</div>
         <div className="header-right">
           {isAuthenticated && (
             <div className="profile-pic">
@@ -664,7 +665,7 @@ const HomePage: FC = () => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 logout();
-                window.location.reload();
+                setMenuOpen(false);
               }}
               style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
             >
@@ -673,6 +674,32 @@ const HomePage: FC = () => {
           </div>
         </div>
       )}
+
+      {/* Easter Egg ao clicar no logo */}
+      {showEasterEggModal && (
+        <div className="modal-overlay">
+          <div className="modal easter-egg-modal">
+            <h2 className="easter-title">Urbanly</h2>
+
+            <p className="easter-text">
+              Trabalho de conclusão de curso desenvolvido pelos alunos Alisson Curvina, Evilly Nascimento, Natalia Taira e Leonardo Alves pela FATEC Ipiranga
+              Q1 2026
+            </p>
+
+            <p className="easter-text">
+              Todos direitos reservados (seja lá o que isso significa lul :3)
+            </p>
+
+            <button
+              className="easter-button"
+              onClick={() => setShowEasterEggModal(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

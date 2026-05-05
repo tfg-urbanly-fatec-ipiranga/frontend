@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 
 interface AuthContextType {
@@ -13,10 +14,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = () => {
+    toast.success('Logado com sucesso!');
     setIsAuthenticated(true);
   };
 
   const logout = () => {
+    toast.success('Deslogado com sucesso!');
     setIsAuthenticated(false);
   };
 
@@ -24,6 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       login();
+    } else if (!storedUser) {
+      logout();
     }
   }, []);
 

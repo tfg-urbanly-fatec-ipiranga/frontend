@@ -1,4 +1,8 @@
 import axios from 'axios';
+//import { useAuthContext } from "../context/AuthContext";
+
+//const { logout } = useAuthContext();
+
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
@@ -23,6 +27,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/*
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -31,10 +36,31 @@ api.interceptors.response.use(
       if (stored) {
         localStorage.removeItem('user');
         window.location.href = '/login';
+        logout();
       }
     }
     return Promise.reject(error);
   }
 );
+*/
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const url = error.config?.url;
+
+    const isAuthEndpoint = url?.includes('/auth/change-password');
+
+    if (status === 401 && !isAuthEndpoint) {
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      //logout();
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 
 export default api;

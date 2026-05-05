@@ -37,21 +37,54 @@ export const useAuth = () => {
     }
   };
 
-  const updateUser = async (id: string, userData: any) => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await api.put(`/users/${id}`, userData);
-    return response.data;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || 'Erro ao atualizar usuário';
-    setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
-    console.error('Error updating user:', err);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-};
+  const changePassword = async (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    setLoading(true);
+    setError(null);
 
-  return { registerUser, loginUser, updateUser, loading, error };
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) throw new Error('Usuário não autenticado');
+
+      const parsed = JSON.parse(storedUser);
+      const user = parsed.user || parsed;
+
+      const response = await api.patch('/auth/change-password', {
+        userId: user.id,
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      return response.data;
+
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || 'Erro ao alterar senha';
+      setError(message);
+      console.error('Error changing password:', err);
+      throw err; 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUser = async (id: string, userData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.put(`/users/${id}`, userData);
+      return response.data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar usuário';
+      setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      console.error('Error updating user:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { registerUser, loginUser, updateUser, changePassword, loading, error };
 };

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, type FC, type FormEvent } from 'react';
-import { ArrowLeft, User, AtSign, Mail, Lock, Calendar, Camera, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { ArrowLeft, User, AtSign, Mail, Lock, Calendar, Camera, Eye, EyeOff, ArrowRight, Trash2, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUploadAvatar } from '../hooks/useUploadAvatar';
 import { useAuthContext } from "../context/AuthContext";
 import { toast } from 'react-toastify';
 import './EditProfile.css';
 import { useAuth } from '../hooks/useAuth';
+import api from '../services/api';
 
 const EditProfilePage: FC = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const EditProfilePage: FC = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { logout } = useAuthContext();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -180,13 +183,51 @@ const EditProfilePage: FC = () => {
     }
   };
 
+  const handleDeactivateUser = async () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const user = parsed.user || parsed;
+      const confirmed = window.confirm(
+        'Tem certeza que deseja desativar este Usuário? Ele poderá ser restaurado por um administrador.'
+      );
+      if (!confirmed) return;
+        setDeleting(true);
+        try {
+          await api.delete(`/users/${user.id}`);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          logout();
+          setDeleting(false);
+          navigate('/home');
+        } catch (err: any) {
+          setErrorMessage(err.response?.data?.message || 'Erro ao desativar usuário');
+          toast.error(errorMessage);
+          setDeleting(false);
+        }
+    } else {
+      toast.error('Erro ao desativar usuário. Usuário não encontrado.')
+    }
+  }
+
   return (
     <div className="edit-profile-page">
       <header className="profile-header">
         <button className="back-button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '20px', color: 'var(--accent)', fontWeight: 700 }}>Urbanly</h1>
+        <h1 className="header-title" style={{ left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '20px', color: 'white', fontWeight: 700 }}>Urbanly</h1>
+          <button
+            className="logout-button"
+            onClick={() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              logout();
+              navigate('/home');
+            }}
+          >
+            <LogOut size={22} />
+          </button>
       </header>
 
       <main className="profile-card">
@@ -403,31 +444,13 @@ const EditProfilePage: FC = () => {
             </div>
           </div>
         )}
-          
-        
-
         <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
-            <button 
-              type="button"
-              onClick={() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                logout();
-                navigate('/home');
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ef4444',
-                fontSize: '16px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <User size={20} /> Encerrar Sessão
+            <button
+              className="delete-button"
+              disabled={deleting}
+              onClick={handleDeactivateUser}            >
+              <Trash2 size={18} />
+              {deleting ? 'Desativando...' : 'Desativar Usuário'}
             </button>
           </div>
       </main>

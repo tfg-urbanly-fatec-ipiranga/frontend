@@ -216,7 +216,7 @@ const EditProfilePage: FC = () => {
         <button className="back-button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title" style={{ left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '20px', color: 'white', fontWeight: 700 }}>Urbanly</h1>
+        <h1 className="header-title" onClick={() => navigate('/home')} style={{ left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '20px', color: 'white', fontWeight: 700 }}>Urbanly</h1>
           <button
             className="logout-button"
             onClick={() => {

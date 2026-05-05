@@ -96,10 +96,10 @@ const RegisterEstablishment: FC = () => {
   return (
     <div className="register-establishment-page">
       <header className="establishment-header">
-        <button className="back-button" type="button" onClick={() => navigate('/home')}>
+        <button className="back-button" type="button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title">Urbanly</h1>
+        <h1 className="header-title" onClick={() => navigate('/home')}>Urbanly</h1>
       </header>
 
       <main className="establishment-card">

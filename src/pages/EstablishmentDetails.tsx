@@ -40,7 +40,7 @@ const EstablishmentDetailsPage: FC = () => {
           <button className="icon-button back-button-force-login" onClick={() => navigate(-1)}>
             <ArrowLeft size={20} />
           </button>
-          <span className="brand-text-force-login">Urbanly</span>
+          <span className="brand-text-force-login" onClick={() => navigate('/home')}>Urbanly</span>
         </header>
 
         <main>
@@ -104,7 +104,7 @@ const EstablishmentDetailsPage: FC = () => {
         <button className="icon-button back-button" onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
         </button>
-        <span className="brand-text">Urbanly</span>
+        <span className="brand-text" onClick={() => navigate('/home')}>Urbanly</span>
         {(() => {
           try {
             const stored = localStorage.getItem("user");

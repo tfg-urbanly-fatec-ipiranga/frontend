@@ -39,7 +39,7 @@ const LoginPage: FC = () => {
           <span className="logo-u">U</span>
         </div>
         
-        <h2 className="brand-name">Urbanly</h2>
+        <h2 className="brand-name" onClick={() => navigate('/home')}>Urbanly</h2>
         <p className="brand-tagline">Passeios que combinam com você</p>
 
         <form className="login-form" onSubmit={handleLogin}>

@@ -219,12 +219,12 @@
   transform: scale(0.98);
 }
 
-.edit-button {
+.change-password-button {
   background-color: var(--accent);
   color: white;
   border: none;
   border-radius: 24px;
-  padding: 18px;
+  padding: 10px;
   font-size: 18px;
   font-weight: 600;
   display: flex;
@@ -238,6 +238,71 @@
   margin-top: 8px;
 }
 
-.edit-button:active {
+.change-password-button:active {
   transform: scale(0.98);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 300px;
+}
+
+.modal h2 {
+  color: #1F2937; /* mesmo tom dos inputs */
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.modal input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.modal-actions button {
+  flex: 1;
+  border-radius: 24px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-actions button:last-child {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(240, 93, 36, 0.3);
+}
+
+.modal-actions button:first-child {
+  border: none;
+}
+
+.modal-actions button:active {
+  transform: scale(0.97);
 }

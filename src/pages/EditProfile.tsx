@@ -9,13 +9,23 @@ import { useAuth } from '../hooks/useAuth';
 
 const EditProfilePage: FC = () => {
   const navigate = useNavigate();
-  const { updateUser, loading: loadingAuth, error: errorAuth } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
+  const { updateUser, changePassword, loading: loadingAuth } = useAuth();
+  const [showPasswordOld, setShowPasswordOld] = useState(false);
+  const [showPasswordNew, setShowPasswordNew] = useState(false);
+  const [showPasswordCfr, setShowPasswordCfr] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { uploadAvatar, loading: uploadingAvatar, error: avatarError } = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { logout } = useAuthContext();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -85,16 +95,38 @@ const EditProfilePage: FC = () => {
       };
 
       if (JSON.stringify(formData) === JSON.stringify(formDataUp)) {
+        setIsEditing(false);
         return toast.warn('Usuário não atualizado! Nenhum dado alterado!');
       }
 
-      const updatedUser = await updateUser(userUp.id, formData);
-
-      if(updatedUser) {
+      try { 
+        const updatedUser = await updateUser(userUp.id, formData);
+        if(updatedUser) {
         toast.success('Usuário atualziado com sucesso!');
         setIsEditing(false);
         localStorage.setItem('user', JSON.stringify({...parsed, user: { ...parsed.user , ...updatedUser}}));
       }
+      } catch (err: any) {
+        const status = err.response?.status;
+        const message = err.response?.data?.message;
+
+        if (status === 409) {
+          if (message.includes('email')) {
+            setFormData({...formData, email: formDataUp.email})
+            return toast.error('Email já em uso');
+          } else if (message.includes('username')) {
+            setFormData({...formData, username: formDataUp.username})
+            return toast.error('Usuário já em uso');
+          } else {
+            return toast.error('Dados já estão em uso');
+          }
+        } else {
+          return toast.error('Erro ao atualizar usuário');
+        }
+      } finally {
+        setIsEditing(false);
+      }
+
     } else {
       toast.warning('Usuário não logado! Se logue para utilizar essa função!');
       navigate('/home');
@@ -107,7 +139,46 @@ const EditProfilePage: FC = () => {
     e?.preventDefault();
     setIsEditing(true);
   };
+
+  const handleCloseModal = async () => {
+    setShowPasswordOld(false);
+    setShowPasswordNew(false);
+    setShowPasswordCfr(false);
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setShowPasswordModal(false);
+  }
   
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return toast.error('As senhas não coincidem');
+    }
+
+    try {
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      toast.success('Senha alterada com sucesso!');
+      handleCloseModal();
+
+    } catch (err: any) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+
+      if (status === 401 && message.includes('Invalid current password')) {
+        toast.error('Senha atual incorreta');
+      } else if (status === 400 && passwordData.newPassword.length < 6){
+        toast.error('Senha menor que 6 caracteres!');
+      } else {
+        toast.error('Erro ao alterar senha');
+      }
+    }
+  };
 
   return (
     <div className="edit-profile-page">
@@ -212,29 +283,6 @@ const EditProfilePage: FC = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Senha</label>
-            <div className={`input-wrapper ${!isEditing ? 'disabled' : ''}`}>
-              <Lock size={20} className="input-icon" />
-              <input 
-                type={showPassword ? "text" : "password"} 
-                defaultValue="********" 
-                disabled={!isEditing}
-                className="input-field" 
-                required
-                minLength={6}
-                placeholder="********" 
-              />
-              <button 
-                type="button"
-                className="password-toggle" 
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
             <label className="form-label">Data de nascimento</label>
             <div className={`input-wrapper ${!isEditing ? 'disabled' : ''}`}>
               <Calendar size={20} className="input-icon" />
@@ -252,16 +300,111 @@ const EditProfilePage: FC = () => {
           </div>
 
           {isEditing ? (
-            <button type="submit" className="save-button">
-              Salvar alterações <ArrowRight size={20} />
+            <button type="submit" className="save-button" disabled={loadingAuth}>
+              {loadingAuth? 'Salvando alterações...' : 'Salvar alterações'} <ArrowRight size={20} />
             </button>
           ) : (
-            <button type="button" className="edit-button" onClick={handleEditing} style={{ backgroundColor: '#6B7280' }}>
+            <button type="button" className="save-button" onClick={handleEditing} style={{ backgroundColor: '#6B7280' }}>
               Editar Perfil <ArrowRight size={20} />
             </button>
           )}
         </div>
+        <button type="button" className="change-password-button" onClick={() => {setShowPasswordModal(true);}}>
+          Alterar senha
+        </button>
+
         </form>
+
+        {showPasswordModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h2>Alterar senha</h2>
+
+              <div className="edit-form">
+                <div className="form-group">
+                  <label className="form-label">Senha antiga</label>
+                  <div className="input-wrapper">
+                    <Lock size={20} className="input-icon" />
+                    <input 
+                      name='currentPassword'
+                      type={showPasswordOld ? "text" : "password"} 
+                      value={passwordData.currentPassword} 
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      className="input-field" 
+                      placeholder='******'
+                      minLength={6}
+                    />
+                    <button 
+                      type="button"
+                      className="password-toggle" 
+                      onClick={() => setShowPasswordOld(!showPasswordOld)}
+                      >
+                      {showPasswordOld ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Senha nova</label>
+                  <div className="input-wrapper">
+                    <Lock size={20} className="input-icon" />
+                    <input
+                      name='newPassword' 
+                      type={showPasswordNew ? "text" : "password"} 
+                      value={passwordData.newPassword} 
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      className="input-field"
+                      placeholder='******'
+                      minLength={6}
+                    />
+                    <button 
+                      type="button"
+                      className="password-toggle" 
+                      onClick={() => setShowPasswordNew(!showPasswordNew)}
+                      >
+                      {showPasswordNew ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Confirme a senha nova</label>
+                  <div className="input-wrapper">
+                    <Lock size={20} className="input-icon" />
+                    <input
+                      name='confirmPassword'
+                      type={showPasswordCfr ? "text" : "password"} 
+                      value={passwordData.confirmPassword} 
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      className="input-field" 
+                      placeholder='******'
+                      minLength={6}
+                    />
+                    <button 
+                      type="button"
+                      className="password-toggle" 
+                      onClick={() => setShowPasswordCfr(!showPasswordCfr)}
+                      >
+                      {showPasswordCfr ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" onClick={handleCloseModal} disabled={loadingAuth}>
+                  Cancelar
+                </button>
+
+                <button type="button" onClick={handleChangePassword} disabled={loadingAuth}>
+                  {loadingAuth? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+          
+        
 
         <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
             <button 
@@ -270,7 +413,6 @@ const EditProfilePage: FC = () => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 logout();
-                toast.success('Deslogado com sucesso!');
                 navigate('/home');
               }}
               style={{

@@ -306,3 +306,66 @@
 .modal-actions button:active {
   transform: scale(0.97);
 }
+
+.delete-button {
+  background: none;
+  color: #EF4444;
+  border: 1.5px solid #FCA5A5;
+  border-radius: 24px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+}
+
+.delete-button:hover:not(:disabled) {
+  background: #FEF2F2;
+  border-color: #EF4444;
+}
+
+.delete-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.logout-button {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.logout-button svg {
+  color: white;
+  stroke: white;
+}
+
+.logout-button:hover {
+  opacity: 0.8;
+}
+
+.back-button:hover {
+  opacity: 0.8;
+}
+
+.back-button:hover svg{
+  transform: scale(1.1);
+}
+
+.back-button:hover svg{
+  transform: scale(1.1);
+}

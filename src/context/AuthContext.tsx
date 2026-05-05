@@ -26,9 +26,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      login();
+      setIsAuthenticated(true);
     } else if (!storedUser) {
-      logout();
+      setIsAuthenticated(false);
     }
   }, []);
 

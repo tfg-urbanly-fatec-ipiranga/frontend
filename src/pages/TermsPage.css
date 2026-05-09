@@ -1,0 +1,98 @@
+.terms-page {
+  min-height: 100vh;
+  background: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sans);
+}
+
+.terms-header {
+  background: white;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #F3F4F6;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+}
+
+.terms-header .brand-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.back-button {
+  position: absolute;
+  left: 20px;
+  background: none;
+  border: none;
+  color: #6B7280;
+  cursor: pointer;
+}
+
+.terms-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.terms-hero {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.terms-hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #FFF2ED;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.terms-hero h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.terms-hero p {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.terms-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.terms-card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.terms-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4B5563;
+}

@@ -7,6 +7,8 @@ import { usePlaceReviews } from '../hooks/usePlaceReviews';
 import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import './EstablishmentDetails.css';
 import React from 'react';
+import api from '../services/api';
+import { toast } from 'react-toastify';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&auto=format&fit=crop';
 
@@ -19,6 +21,61 @@ const EstablishmentDetailsPage: FC = () => {
   const { photos, loading: photosLoading } = usePlacePhotos(id);
   //const { reviews, loading: reviewsLoading } = usePlaceReviews(id);
   const { reviews, averageRating, loading: reviewsLoading } = usePlaceReviews(id);
+
+  const [showReviewModal, setShowReviewModal] = React.useState(false);
+  const [rating, setRating] = React.useState(0);
+  const [comment, setComment] = React.useState('');
+  const [submittingReview, setSubmittingReview] = React.useState(false);
+
+  const submitReview = async () => {
+  if (!id) return;
+
+  if (rating === 0) {
+    alert('Selecione uma nota.');
+    return;
+  }
+
+  try {
+    setSubmittingReview(true);
+
+    const stored = localStorage.getItem('user');
+
+    if (!stored) {
+      alert('Você precisa estar logado.');
+      return;
+    }
+
+    const parsed = JSON.parse(stored);
+
+    const userId =
+      parsed?.user?.id ||
+      parsed?.id;
+
+    await api.post('/reviews', {
+      userId,
+      placeId: id,
+      rating,
+      comment,
+    });
+
+    toast.success('Avaliação enviada e pendente de aprovação.');
+
+    setShowReviewModal(false);
+    setRating(0);
+    setComment('');
+
+  } catch (err: any) {
+  console.error(err);
+
+  if (err.response?.status === 409) {
+    toast.error('Você já avaliou este estabelecimento.');
+  } else {
+    toast.error('Erro ao enviar avaliação.');
+  }
+}
+};
+
+
 
   const loading = placeLoading || photosLoading || reviewsLoading;
 
@@ -203,6 +260,18 @@ const EstablishmentDetailsPage: FC = () => {
             </div>
           </div>
 
+          {/* Add Button */}
+          <div className="review-action-container">
+            <button
+              className="add-review-button"
+              onClick={() => setShowReviewModal(true)}
+            >
+              <MessageSquare size={18} />
+              Adicionar avaliação
+            </button>
+          </div>
+
+
           {/* Reviews */}
           {reviews.length > 0 && (
             <div className="details-card">
@@ -264,6 +333,62 @@ const EstablishmentDetailsPage: FC = () => {
           </button>
         </section>
       </main>
+            {showReviewModal && (
+        <div className="review-modal-overlay">
+          <div className="review-modal">
+
+            <h2>Avaliar estabelecimento</h2>
+
+            {/* Estrelas */}
+            <div className="review-stars-selector">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="star-button"
+                  onClick={() => setRating(i + 1)}
+                >
+                  <Star
+                    size={28}
+                    fill={i < rating ? 'currentColor' : 'none'}
+                    className={i < rating ? 'rating-star' : 'star-empty'}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Comentário */}
+            <textarea
+              className="review-textarea"
+              placeholder="Conte sua experiência..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+
+            {/* Botões */}
+            <div className="review-modal-actions">
+
+              <button
+                className="cancel-review-button"
+                onClick={() => setShowReviewModal(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="submit-review-button"
+                onClick={submitReview}
+                disabled={submittingReview}
+              >
+                {submittingReview ? 'Enviando...' : 'Enviar avaliação'}
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

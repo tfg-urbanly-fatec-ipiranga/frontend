@@ -14,6 +14,7 @@ import './App.css';
 import { AuthProvider } from './context/AuthContext';
 import React from "react";
 import 'react-toastify/dist/ReactToastify.css';
+import AdminReviewsPage from './pages/AdminReviewsPage';
 
 function isAdmin(): boolean {
   try {
@@ -50,6 +51,7 @@ function App() {
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/admin/inactive" element={<AdminRoute><InactiveRecordsPage /></AdminRoute>} />
           <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/admin/reviews" element={<AdminRoute><AdminReviewsPage /></AdminRoute>}/>
         </Routes>
       </Router>
       <ToastContainer position="top-center" autoClose={3000} />

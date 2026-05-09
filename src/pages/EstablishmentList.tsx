@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type FC } from 'react';
-import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus, MessageSquare } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
 import { useFavorites } from '../hooks/useFavorites';
@@ -23,8 +23,19 @@ const EstablishmentListPage: FC = () => {
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { tags, loading: tagsLoading } = useTags();
   const storedUser = localStorage.getItem("user");
-  const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
-  
+  const parsedUser = React.useMemo(() => {
+  try {
+    if (!storedUser) return null;
+
+    const parsed = JSON.parse(storedUser);
+    return parsed.user ?? parsed;
+  } catch {
+    return null;
+  }
+}, [storedUser]);
+  const isAdmin = parsedUser?.role === 'ADMIN';
+
+
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return "";
     const firstInitial = firstName ? firstName[0].toUpperCase() : "";
@@ -101,32 +112,53 @@ const EstablishmentListPage: FC = () => {
             <button className="menu-button" onClick={() => setShowMenu(!showMenu)}>
               <Menu size={24} />
             </button>
-            {showMenu && (
-              <div className="dropdown-menu">
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => navigate('/register-establishment')}
-                >
-                  <Plus size={18} />
-                  <span>Cadastrar Estabelecimento</span>
-                </button>
-                <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
-                <button 
-                  className="dropdown-item" 
-                  onClick={() => {
-                    // Clear token/user data (assuming localStorage for now)
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    logout();
-                    navigate('/home');
-                  }}
-                  style={{ color: '#ef4444' }}
-                >
-                  <User size={18} />
-                  <span>Sair</span>
-                </button>
-              </div>
-            )}
+              {showMenu && (
+                <div className="dropdown-menu">
+
+                  {isAdmin && (
+                    <>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => navigate('/register-establishment')}
+                      >
+                        <Plus size={18} />
+                        <span>Cadastrar Estabelecimento</span>
+                      </button>
+
+                      <button
+                        className="dropdown-item"
+                        onClick={() => navigate('/admin/reviews')}
+                      >
+                        <MessageSquare size={18} />
+                        <span>Gerenciar Avaliações</span>
+                      </button>
+
+                      <div
+                        style={{
+                          height: '1px',
+                          backgroundColor: '#e5e7eb',
+                          margin: '4px 0'
+                        }}
+                      />
+                    </>
+                  )}
+
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('user');
+                      logout();
+                      navigate('/home');
+                    }}
+                    style={{ color: '#ef4444' }}
+                  >
+                    <User size={18} />
+                    <span>Sair</span>
+                  </button>
+
+                </div>
+              )}
           </div>
         </div>
       </header>

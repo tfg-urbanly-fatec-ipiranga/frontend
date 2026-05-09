@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, type FC } from 'react';
+import React, { useState, useEffect, useRef, useMemo, type FC } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
-import { Search, SlidersHorizontal, Heart, Home, Compass, User, Menu, X, Store } from 'lucide-react';
+import { Search, SlidersHorizontal, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -682,12 +682,19 @@ const HomePage: FC = () => {
             <h2 className="easter-title">Urbanly</h2>
 
             <p className="easter-text">
-              Trabalho de conclusão de curso desenvolvido pelos alunos Alisson Curvina, Evilly Nascimento, Natalia Taira e Leonardo Alves pela FATEC Ipiranga
+              Trabalho de conclusão de curso desenvolvido pelos alunos Alisson Curvina, Evilly Nascimento, Natalia Taira e Leonardo Alves pela FATEC Ipiranga              
+            </p>
+
+            <p className="easter-text">
               Q1 2026
             </p>
 
             <p className="easter-text">
               Todos direitos reservados (seja lá o que isso significa lul :3)
+            </p>
+
+            <p className="easter-text">
+              Visite o Bar do Léo, apesar de cheirar a peixe podre, ele é aconchegante e um ótimo lugar para levar os amigos.
             </p>
 
             <button

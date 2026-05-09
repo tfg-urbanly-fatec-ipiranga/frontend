@@ -7,6 +7,12 @@ export interface PlaceCategory {
   name: string;
 }
 
+export interface PlacePhoto {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+}
+
 export interface Place {
   id: string;
   name: string;

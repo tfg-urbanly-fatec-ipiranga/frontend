@@ -52,6 +52,19 @@ const EstablishmentListPage: FC = () => {
     }
   };
 
+const fallbackImage =
+  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop';
+
+const getPlaceImage = (place: Place) => {
+  const primaryPhoto = place.photos?.find(
+    (photo: { isPrimary: any; }) => photo.isPrimary
+  );
+
+  const firstPhoto = place.photos?.[0];
+
+  return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
+};
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -166,8 +179,8 @@ const EstablishmentListPage: FC = () => {
         {!statePlaces && error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
         {places && places.map(place => (
           <div key={place.id} className="establishment-card" onClick={() => navigate(`/establishment/${place.id}`)}>
-            {/* Placeholder until photos logic is added */}
-            <img src={'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop'} alt={place.name} className="card-image" />
+            
+            <img src={getPlaceImage(place)} alt={place.name} className="card-image"/>
             <div className="card-info">
               <div className="card-header">
                 <h3 className="card-title">{place.name}</h3>

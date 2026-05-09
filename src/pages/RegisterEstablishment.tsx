@@ -1,20 +1,23 @@
 import React, { useState, type FC, type FormEvent } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreatePlace } from '../hooks/useCreatePlace';
 import { useCategories } from '../hooks/useCategories';
 import { useTags } from "../hooks/useTags";
 import { usePlaceTags } from "../hooks/usePlaceTags";
+import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import './RegisterEstablishment.css';
 import { toast } from 'react-toastify';
 
 // Using the generated paths directly in the component for now
 // In a real app, these would be proper imports or URLs
+/*
 const PLACEHOLDER_IMAGES = [
   '/coffee_shop_interior_1.png',
   '/barista_making_coffee_1.png',
   '/two_coffee_cups_on_table_1.png'
 ];
+*/
 
 const RegisterEstablishment: FC = () => {
   const navigate = useNavigate();
@@ -23,6 +26,13 @@ const RegisterEstablishment: FC = () => {
   const { tags, loading: tagsLoading } = useTags();
   const { addTag, loading: saveLoading } = usePlaceTags(); // aqui não precisa passar id ainda, pois é cadastro
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const { uploadPhotoNewPlace, loading: photoLoading} = usePlacePhotos(undefined);
+  const removeImage = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
 
   
   // Basic Form State
@@ -60,6 +70,14 @@ const RegisterEstablishment: FC = () => {
     );
   }
 
+  if(photoLoading){
+    return (
+      <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Salvando Fotos...</p>
+      </div>
+    );
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -67,7 +85,11 @@ const RegisterEstablishment: FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+     
+    if(selectedFiles.length === 0){
+      return toast.warn('Nenhuma foto adicionada! Adicione pelo menos uma foto!');
+    }
+
     // Format data for the backend DTO
     const payload: any = {
       ...formData,
@@ -86,6 +108,18 @@ const RegisterEstablishment: FC = () => {
       // adiciona tags selecionadas
       for (const tagName of activeTags) {
         await addTag(tagName, createdPlace.id); 
+      }
+
+      if (selectedFiles.length > 0) {
+      await Promise.all(
+        selectedFiles.map((file, index) => {
+          //console.log('RegisterEstabilishment:', index);
+          uploadPhotoNewPlace(
+            createdPlace.id,
+            file,            
+            undefined,
+            index === 0);}
+          ));
       }
 
       toast.success('Estabelecimento cadastrado com sucesso!');
@@ -243,20 +277,60 @@ const RegisterEstablishment: FC = () => {
 
         <div className="form-group">
           <label className="form-label">Galeria de fotos</label>
+
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            style={{ display: 'none' }}
+            id="upload-photos"
+            onChange={(e) => {
+              const files = e.target.files;
+              if (!files) return;
+
+              const fileArray = Array.from(files);
+
+              const total = selectedFiles.length + fileArray.length;
+
+              if (total > 4) {
+                toast.warning('Você pode adicionar no máximo 4 fotos');
+                return;
+              }
+              setSelectedFiles(prev => [...prev, ...fileArray]);
+
+              const previews = fileArray.map(file => URL.createObjectURL(file));
+              setPreviewUrls(prev => [...prev, ...previews]);
+            }}
+          />
+
           <div className="gallery-grid">
-            <div className="gallery-item">
-              <img src={PLACEHOLDER_IMAGES[0]} alt="Gallery 1" className="gallery-image" />
-            </div>
-            <div className="gallery-item">
-              <img src={PLACEHOLDER_IMAGES[1]} alt="Gallery 2" className="gallery-image" />
-            </div>
-            <div className="gallery-item">
-              <img src={PLACEHOLDER_IMAGES[2]} alt="Gallery 3" className="gallery-image" />
-            </div>
-            <button type="button" className="add-photo-button" onClick={() => alert('Galeria em construção')}>
-              <Plus size={24} />
-            </button>
+            {previewUrls.map((url, index) => (
+              <div key={index} className="gallery-item">
+                <img src={url} className="gallery-image" />
+
+                <button
+                  type="button"
+                  className="remove-photo-button"
+                  onClick={() => removeImage(index)}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+
+            {selectedFiles.length < 4 && (
+              <button
+                type="button"
+                className="add-photo-button"
+                onClick={() => document.getElementById('upload-photos')?.click()}
+              >
+                <Plus size={24} />
+              </button>
+            )}
+
           </div>
+          <p> A primeira foto cadastrada será registrada como primária.</p>
+          <p> A foto primária pode ser alterada no Administrar Estabelecimento.</p>
         </div>
 
         {createError && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>Erro: {createError}</div>}

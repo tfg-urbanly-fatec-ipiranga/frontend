@@ -37,10 +37,10 @@ const RegisterPage: FC = () => {
   return (
     <div className="register-page">
       <header className="register-header">
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <button className="register-back-button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title">Criar uma conta</h1>
+        <h1 className="register-header-title">Crie uma conta</h1>
       </header>
 
       <main className="register-card">
@@ -150,7 +150,14 @@ const RegisterPage: FC = () => {
         </div>
 
         <p className="terms-text">
-          Ao se cadastrar no Urbanly, você concorda com nossos <a href="#" className="terms-link">Termos de Serviço</a> e Política de Privacidade.
+          Ao se cadastrar no Urbanly, você concorda com nossos{' '}
+          <span className="terms-link" onClick={() => navigate('/terms')}>
+            Termos de Serviço
+          </span>{' '}
+          e{' '}
+          <span className="terms-link" onClick={() => navigate('/privacy')}>
+            Política de Privacidade
+          </span>.
         </p>
 
         {error && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>Erro: {error}</div>}

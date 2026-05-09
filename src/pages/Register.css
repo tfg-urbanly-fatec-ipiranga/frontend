@@ -23,10 +23,10 @@
   border-bottom-right-radius: 40px;
 }
 
-.back-button {
+.register-back-button {
   position: absolute;
   left: 24px;
-  top: 50%; /* Center vertically in header */
+  top: 50%;
   transform: translateY(-50%);
   color: white;
   background: none;
@@ -35,10 +35,10 @@
   padding: 8px;
 }
 
-.header-title {
+.register-header-title {
   color: white;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 25px;
+  font-weight: 600;
   margin: 0;
   position: absolute;
   left: 50%;
@@ -164,7 +164,29 @@
 }
 
 .login-link {
-  color: var(--accent);
+  color: #059669;
   text-decoration: none;
   font-weight: 600;
+  text-decoration: underline;
+}
+
+.terms-text {
+  font-size: 13px;
+  color: #6B7280;
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.terms-link {
+  color: #059669;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.terms-link:hover {
+  color: #2F6F6C;
 }

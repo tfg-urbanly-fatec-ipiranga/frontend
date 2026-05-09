@@ -6,7 +6,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { usePlaceReviews } from '../hooks/usePlaceReviews';
 import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import './EstablishmentDetails.css';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
 
@@ -19,7 +19,6 @@ const EstablishmentDetailsPage: FC = () => {
   const { place, loading: placeLoading, error } = usePlaceDetails(id);
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { photos, loading: photosLoading } = usePlacePhotos(id);
-  //const { reviews, loading: reviewsLoading } = usePlaceReviews(id);
   const { reviews, averageRating, loading: reviewsLoading } = usePlaceReviews(id);
 
   const [showReviewModal, setShowReviewModal] = React.useState(false);
@@ -27,55 +26,84 @@ const EstablishmentDetailsPage: FC = () => {
   const [comment, setComment] = React.useState('');
   const [submittingReview, setSubmittingReview] = React.useState(false);
 
+  // Tags come from placeTags[].tag.name
+  const tags = place?.placeTags?.map(pt => pt.tag.name) ?? [];
+  const tagsRef = useRef<HTMLDivElement | null>(null);
+  const [tagsOverflowing, setTagsOverflowing] = useState(false);
+
+  const formatReviewDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+  
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (tagsRef.current) {
+        const el = tagsRef.current;
+
+        setTagsOverflowing(el.scrollWidth > el.clientWidth);
+      }
+    };
+
+    checkOverflow();
+
+    window.addEventListener('resize', checkOverflow);
+
+    return () => {
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [tags]);
+
   const submitReview = async () => {
-  if (!id) return;
+    if (!id) return;
 
-  if (rating === 0) {
-    alert('Selecione uma nota.');
-    return;
-  }
-
-  try {
-    setSubmittingReview(true);
-
-    const stored = localStorage.getItem('user');
-
-    if (!stored) {
-      alert('Você precisa estar logado.');
+    if (rating === 0) {
+      alert('Selecione uma nota.');
       return;
     }
 
-    const parsed = JSON.parse(stored);
+    try {
+      setSubmittingReview(true);
 
-    const userId =
-      parsed?.user?.id ||
-      parsed?.id;
+      const stored = localStorage.getItem('user');
 
-    await api.post('/reviews', {
-      userId,
-      placeId: id,
-      rating,
-      comment,
-    });
+      if (!stored) {
+        alert('Você precisa estar logado.');
+        return;
+      }
 
-    toast.success('Avaliação enviada e pendente de aprovação.');
+      const parsed = JSON.parse(stored);
 
-    setShowReviewModal(false);
-    setRating(0);
-    setComment('');
+      const userId =
+        parsed?.user?.id ||
+        parsed?.id;
 
-  } catch (err: any) {
-  console.error(err);
+      await api.post('/reviews', {
+        userId,
+        placeId: id,
+        rating,
+        comment,
+      });
 
-  if (err.response?.status === 409) {
-    toast.error('Você já avaliou este estabelecimento.');
-  } else {
-    toast.error('Erro ao enviar avaliação.');
-  }
-}
-};
+      toast.success('Avaliação enviada e pendente de aprovação.');
 
+      setShowReviewModal(false);
+      setRating(0);
+      setComment('');
 
+    } catch (err: any) {
+      console.error(err);
+
+      if (err.response?.status === 409) {
+        toast.error('Você já avaliou este estabelecimento.');
+      } else {
+        toast.error('Erro ao enviar avaliação.');
+      }
+    }
+  };
 
   const loading = placeLoading || photosLoading || reviewsLoading;
 
@@ -138,15 +166,12 @@ const EstablishmentDetailsPage: FC = () => {
   const primaryPhoto = photos.find(p => p.isPrimary) ?? photos[0];
   const imageUrl = primaryPhoto?.url ?? FALLBACK_IMAGE;
 
-  // Tags come from placeTags[].tag.name
-  const tags = place.placeTags?.map(pt => pt.tag.name) ?? [];
+
 
   // Horários
   const hours = place.openingTime && place.closingTime
     ? `${place.openingTime} - ${place.closingTime}`
     : 'Horário não disponível';
-
-
   
   // Rating
   const ratingDisplay = averageRating !== null
@@ -189,7 +214,18 @@ const EstablishmentDetailsPage: FC = () => {
       <main>
         {/* Hero */}
         <section className="hero-section">
-          <img src={imageUrl} alt={place.name} className="hero-image" />
+
+          <div className="hero-carousel">
+            {(photos.length > 0 ? photos : [{ url: FALLBACK_IMAGE }]).map((photo, index) => (
+              <img
+                key={index}
+                src={photo.url}
+                alt={`${place.name} ${index + 1}`}
+                className="hero-image"
+              />
+            ))}
+          </div>
+
           <button
             className={`floating-favorite ${isFavorite(place.id) ? 'active' : ''}`}
             onClick={() => toggleFavorite(place.id)}
@@ -197,8 +233,12 @@ const EstablishmentDetailsPage: FC = () => {
             aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
             style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
           >
-            <Heart size={24} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
+            <Heart
+              size={24}
+              fill={isFavorite(place.id) ? 'currentColor' : 'none'}
+            />
           </button>
+
         </section>
 
         {/* Info */}
@@ -219,7 +259,7 @@ const EstablishmentDetailsPage: FC = () => {
 
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="tags-container">
+            <div ref={tagsRef} className={`tags-container ${tagsOverflowing ? 'overflowing' : ''}`}>
               {tags.map(tagName => (
                 <span key={tagName} className="tag-pill">{tagName}</span>
               ))}
@@ -291,6 +331,9 @@ const EstablishmentDetailsPage: FC = () => {
                       <div className="review-meta">
                         <span className="reviewer-name">
                           {review.user.firstName} {review.user.lastName}
+                        </span>
+                        <span className="review-date">
+                          {formatReviewDate(review.createdAt)}
                         </span>
                         <div className="review-stars">
                           {Array.from({ length: 5 }).map((_, i) => (

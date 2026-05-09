@@ -329,8 +329,7 @@ const RegisterEstablishment: FC = () => {
             )}
 
           </div>
-          <p> A primeira foto cadastrada será registrada como primária.</p>
-          <p> A foto primária pode ser alterada no Administrar Estabelecimento.</p>
+          <p className="footer-link-text"> A primeira foto cadastrada será registrada como principal. Ela pode ser alterada no Administrar Estabelecimentos.</p>
         </div>
 
         {createError && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>Erro: {createError}</div>}

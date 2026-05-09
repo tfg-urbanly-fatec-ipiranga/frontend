@@ -253,3 +253,28 @@
   text-decoration: none;
   font-weight: 600;
 }
+
+.gallery-item {
+  position: relative;
+}
+
+.remove-photo-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-photo-button:hover {
+  background: rgba(0,0,0,0.8);
+}

@@ -106,7 +106,7 @@ const EditEstablishment: FC = () => {
   if (loadingUpdate && isSaving) {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <p>Salvando informações o estabelecimento...</p>
+        <p>Salvando informações do estabelecimento...</p>
       </div>
     );
   }

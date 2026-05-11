@@ -23,6 +23,7 @@ const EstablishmentListPage: FC = () => {
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { tags, loading: tagsLoading } = useTags();
   const storedUser = localStorage.getItem("user");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const parsedUser = React.useMemo(() => {
   try {
     if (!storedUser) return null;
@@ -32,7 +33,7 @@ const EstablishmentListPage: FC = () => {
   } catch {
     return null;
   }
-}, [storedUser]);
+  }, [storedUser]);
   const isAdmin = parsedUser?.role === 'ADMIN';
 
 
@@ -63,18 +64,32 @@ const EstablishmentListPage: FC = () => {
     }
   };
 
-const fallbackImage =
-  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop';
+  const fallbackImage =
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop';
 
-const getPlaceImage = (place: Place) => {
-  const primaryPhoto = place.photos?.find(
-    (photo: { isPrimary: any; }) => photo.isPrimary
-  );
+  const getPlaceImage = (place: Place) => {
+    const primaryPhoto = place.photos?.find(
+      (photo: { isPrimary: any; }) => photo.isPrimary
+    );
 
-  const firstPhoto = place.photos?.[0];
+    const firstPhoto = place.photos?.[0];
 
-  return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
-};
+    return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
+  };
+
+  const handleFavorites = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    placeId: string
+  ) => {
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    toggleFavorite(placeId);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -226,17 +241,54 @@ const getPlaceImage = (place: Place) => {
               </div>
               <button
                 className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}
-                onClick={(e) => { e.stopPropagation(); toggleFavorite(place.id); }}
+                onClick={(e) => handleFavorites(e, place.id)}
                 disabled={isToggling(place.id)}
-                aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
-              >
+                aria-label={
+                  isFavorite(place.id)
+                    ? 'Remover dos favoritos'
+                    : 'Adicionar aos favoritos'
+                }
+                style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}>
                 <Heart size={20} fill={isFavorite(place.id) ? 'currentColor' : 'none'} />
               </button>
             </div>
           </div>
         ))}
       </main>
+
+      {showLoginModal && (
+        <div
+          className="login-modal-overlay"
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div
+            className="login-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Salvar nos favoritos?</h3>
+
+            <p>
+              Faça login para adicionar o estabelecimentos aos seus favoritos.
+            </p>
+
+            <div className="login-modal-actions">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowLoginModal(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="login-btn"
+                onClick={() => navigate('/login')}
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <nav className="bottom-nav">
         <BottomNav />

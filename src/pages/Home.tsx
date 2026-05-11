@@ -240,22 +240,66 @@ const HomePage: FC = () => {
     };
   }, [searchTerm]);
 
-  // Cidades únicas disponíveis nos resultados de busca
+  const filterBasePlaces = useMemo(() => {
+    const hasSearch = searchTerm.trim().length > 0;
+    const hasChips = activeChips.length > 0;
+
+    if (hasSearch && hasChips) {
+      const chipIds = new Set(filteredPlaces.map(p => p.id));
+      return searchPlaces.filter(p => chipIds.has(p.id));
+    }
+
+    if (hasSearch) {
+      return searchPlaces;
+    }
+
+    if (hasChips) {
+      return filteredPlaces;
+    }
+
+    if (!allPlaces || !mapBounds) {
+      return [];
+    }
+
+    return allPlaces.filter(p => {
+      if (p.latitude == null || p.longitude == null) return false;
+
+      return mapBounds.contains([p.latitude, p.longitude]);
+    });
+  }, [
+    searchTerm,
+    activeChips,
+    filteredPlaces,
+    searchPlaces,
+    allPlaces,
+    mapBounds
+  ]);
+
   const availableCities = useMemo(
-    () => [...new Set(searchPlaces.map(p => p.city).filter((c): c is string => Boolean(c)))],
-    [searchPlaces]
+    () =>
+      [...new Set(
+        filterBasePlaces
+          .map(p => p.city)
+          .filter((c): c is string => Boolean(c))
+      )],
+    [filterBasePlaces]
   );
 
   const availableCategories = useMemo(
-    () => [...new Set(searchPlaces.map(p => p.category?.name).filter((c): c is string => Boolean(c))),],
-    [searchPlaces]
+    () =>
+      [...new Set(
+        filterBasePlaces
+          .map(p => p.category?.name)
+          .filter((c): c is string => Boolean(c))
+      )],
+    [filterBasePlaces]
   );
 
   const availableRatings = useMemo(() => {
-    if (!searchPlaces.length) return [];
+    if (!filterBasePlaces.length) return [];
 
     return ratingOptions.filter(option => {
-      return searchPlaces.some(place => {
+      return filterBasePlaces.some(place => {
         const r = place.avgRating;
 
         switch (option.value) {
@@ -279,7 +323,7 @@ const HomePage: FC = () => {
         }
       });
     });
-  }, [searchPlaces]);
+  }, [filterBasePlaces]);
 
 
   // Lógica combinada: busca + chips + filtros avançados
@@ -478,10 +522,14 @@ const HomePage: FC = () => {
               onChange={e => setSearchTerm(e.target.value)}
             />
             <button
-            disabled={isSearching}
-              className={`filter-button${searchPlaces.length > 0 ? ' filter-button--active' : ''}`}
-              onClick={() => { if (searchTerm.trim().length > 0) { setFilterOpen(o => !o); }}}
-              title={searchTerm.trim().length > 0 ? 'Filtros avançados' : 'Faça uma busca para usar filtros'}
+              disabled={isSearching}
+              className={`filter-button${filterOpen ? ' filter-button--active' : ''}`}
+              onClick={() => {
+                if (!isSearching) {
+                  setFilterOpen(o => !o);
+                };
+              }}
+              title="Filtros avançados"
             >
               {isSearching ? (
                 <div className="spinner" />
@@ -491,7 +539,7 @@ const HomePage: FC = () => {
             </button>
           </div>
 
-          {filterOpen && searchTerm.trim().length > 0 && (
+          {filterOpen && !isSearching && (
             <div className="filter-panel">
               <div className="filter-panel-header">
                 <span className="filter-panel-title">Filtros Avançados</span>

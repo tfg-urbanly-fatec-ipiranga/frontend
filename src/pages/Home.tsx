@@ -707,18 +707,29 @@ const HomePage: FC = () => {
               <Store size={20} /> Estabelecimento
             </Link>
             <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '8px 0' }} />
-            <button
-              className="menu-item"
-              onClick={() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                logout();
-                setMenuOpen(false);
-              }}
-              style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
-            >
-              <User size={20} /> Sair
-            </button>
+            {isAuthenticated ? (
+              <button
+                className="menu-item"
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  logout();
+                  setMenuOpen(false);
+                }}
+                style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <User size={20} /> Sair
+              </button>
+            ) : (
+              <button
+                className="menu-item"
+                onClick={() => navigate('/login')
+                }
+                style={{ color: '#ef4444', border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+              >
+                <User size={20} /> Logar
+              </button>
+            )}
           </div>
         </div>
       )}

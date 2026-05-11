@@ -142,7 +142,6 @@ const EstablishmentListPage: FC = () => {
             </button>
               {showMenu && (
                 <div className="dropdown-menu">
-
                   {isAdmin && (
                     <>
                       <button
@@ -170,21 +169,31 @@ const EstablishmentListPage: FC = () => {
                       />
                     </>
                   )}
-
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      localStorage.removeItem('token');
-                      localStorage.removeItem('user');
-                      logout();
-                      navigate('/home');
-                    }}
-                    style={{ color: '#ef4444' }}
-                  >
-                    <User size={18} />
-                    <span>Sair</span>
-                  </button>
-
+                  {isAuthenticated? (
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        logout();
+                        navigate('/home');
+                      }}
+                      style={{ color: '#ef4444' }}
+                    >
+                      <User size={18} />
+                      <span>Sair</span>
+                    </button>
+                  ) : (
+                    <button
+                      className="dropdown-item"
+                      onClick={() => navigate('/login')}
+                      style={{ color: '#ef4444' }}
+                    >
+                      <User size={18} />
+                      <span>Logar</span>
+                    </button>                    
+                  )
+                  }
                 </div>
               )}
           </div>

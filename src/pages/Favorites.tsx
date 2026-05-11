@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type FC } from 'react';
-import { Search, Heart, ArrowLeft, User, Menu, Plus, MapPin } from 'lucide-react';
+import { Search, Heart, ArrowLeft, User, Menu, Plus, MapPin, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from "../context/AuthContext";
@@ -14,6 +14,7 @@ const FavoritesPage: FC = () => {
   const { logout, isAuthenticated  } = useAuthContext();
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
+  const isAdmin = parsedUser?.role === 'ADMIN';
   
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return "";
@@ -98,27 +99,58 @@ const FavoritesPage: FC = () => {
             </button>
             {showMenu && (
               <div className="dropdown-menu">
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate('/register-establishment')}
-                >
-                  <Plus size={18} />
-                  <span>Cadastrar Estabelecimento</span>
-                </button>
-                <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    logout();
-                    window.location.reload();
-                  }}
-                  style={{ color: '#ef4444' }}
-                >
-                  <User size={18} />
-                  <span>Sair</span>
-                </button>
+                  {isAdmin && (
+                    <>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => navigate('/register-establishment')}
+                      >
+                        <Plus size={18} />
+                        <span>Cadastrar Estabelecimento</span>
+                      </button>
+
+                      <button
+                        className="dropdown-item"
+                        onClick={() => navigate('/admin/reviews')}
+                      >
+                        <MessageSquare size={18} />
+                        <span>Gerenciar Avaliações</span>
+                      </button>
+
+                      <div
+                        style={{
+                          height: '1px',
+                          backgroundColor: '#e5e7eb',
+                          margin: '4px 0'
+                        }}
+                      />
+                    </>
+                  )}
+                  {isAuthenticated? (
+                    <button
+                      className="dropdown-item"
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        logout();
+                        navigate('/home');
+                      }}
+                      style={{ color: '#ef4444' }}
+                    >
+                      <User size={18} />
+                      <span>Sair</span>
+                    </button>
+                  ) : (
+                    <button
+                      className="dropdown-item"
+                      onClick={() => navigate('/login')}
+                      style={{ color: '#ef4444' }}
+                    >
+                      <User size={18} />
+                      <span>Logar</span>
+                    </button>                    
+                  )
+                  }
               </div>
             )}
           </div>

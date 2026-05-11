@@ -161,13 +161,6 @@ const EstablishmentDetailsPage: FC = () => {
     );
   }
 
-
-  // Resolve image: prefer primary photo, then first photo, then fallback
-  const primaryPhoto = photos.find(p => p.isPrimary) ?? photos[0];
-  const imageUrl = primaryPhoto?.url ?? FALLBACK_IMAGE;
-
-
-
   // Horários
   const hours = place.openingTime && place.closingTime
     ? `${place.openingTime} - ${place.closingTime}`

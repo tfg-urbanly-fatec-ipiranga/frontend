@@ -139,78 +139,132 @@ const FavoritesPage: FC = () => {
       </section>
 
       <main className="favorites-content">
-        <div className="favorites-heading">
-          <Heart size={18} fill="currentColor" />
-          <span>Meus Favoritos</span>
-          {!loading && <span className="favorites-count">{filtered.length}</span>}
-        </div>
-
-        {loading && (
-          <div className="favorites-empty">
-            <p>Carregando favoritos...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="favorites-empty">
-            <p style={{ color: 'red' }}>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && filtered.length === 0 && (
+        {!isAuthenticated ? (
           <div className="favorites-empty">
             <Heart size={48} className="empty-icon" />
-            <p className="empty-title">Nenhum favorito ainda</p>
-            <p className="empty-subtitle">
-              Explore estabelecimentos e adicione seus favoritos
+
+            <p className="empty-title">
+              Faça login para ver seus favoritos
             </p>
-            <button className="explore-btn" onClick={() => navigate('/establishments')}>
-              Explorar estabelecimentos
+
+            <p className="empty-subtitle">
+              Entre na sua conta para salvar e acessar estabelecimentos favoritos
+            </p>
+
+            <button
+              className="explore-btn"
+              onClick={() => navigate('/login')}
+            >
+              Fazer login
             </button>
           </div>
-        )}
-
-        {!loading && filtered.map((item) => (
-          <div
-            key={item.id}
-            className="fav-card"
-            onClick={() => navigate(`/establishment/${item.place.id}`)}
-          >
-            <img
-              src={getPlaceImage(item.place)}
-              alt={item.place.name}
-              className="fav-card-image"
-            />
-            <div className="fav-card-info">
-              <div className="fav-card-header">
-                <h3 className="fav-card-title">{item.place.name}</h3>
-              </div>
-              {item.place.city && (
-                <div className="fav-card-location">
-                  <MapPin size={13} />
-                  <span>{item.place.city}</span>
-                </div>
-              )}
-              {item.place.category && (
-                <div className="fav-card-tags">
-                  <span className="fav-card-tag">{item.place.category.name}</span>
-                </div>
+        ) : (
+          <>
+            <div className="favorites-heading">
+              <Heart size={18} fill="currentColor" />
+              <span>Meus Favoritos</span>
+              {!loading && (
+                <span className="favorites-count">{filtered.length}</span>
               )}
             </div>
-            <button
-              className={`favorite-btn ${isFavorite(item.place.id) ? 'active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(item.place.id);
-              }}
-              disabled={isToggling(item.place.id)}
-              aria-label={isFavorite(item.place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              style={{ opacity: isToggling(item.place.id) ? 0.5 : 1 }}
-            >
-              <Heart size={20} fill={isFavorite(item.place.id) ? 'currentColor' : 'none'} />
-            </button>
-          </div>
-        ))}
+
+            {loading && (
+              <div className="favorites-empty">
+                <p>Carregando favoritos...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="favorites-empty">
+                <p style={{ color: 'red' }}>{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && filtered.length === 0 && (
+              <div className="favorites-empty">
+                <Heart size={48} className="empty-icon" />
+                <p className="empty-title">Nenhum favorito ainda</p>
+                <p className="empty-subtitle">
+                  Explore estabelecimentos e adicione seus favoritos
+                </p>
+                <button
+                  className="explore-btn"
+                  onClick={() => navigate('/establishments')}
+                >
+                  Explorar estabelecimentos
+                </button>
+              </div>
+            )}
+
+            {!loading &&
+              filtered.map((item) => (
+                <div
+                  key={item.id}
+                  className="fav-card"
+                  onClick={() =>
+                    navigate(`/establishment/${item.place.id}`)
+                  }
+                >
+                  <img
+                    src={getPlaceImage(item.place)}
+                    alt={item.place.name}
+                    className="fav-card-image"
+                  />
+
+                  <div className="fav-card-info">
+                    <div className="fav-card-header">
+                      <h3 className="fav-card-title">
+                        {item.place.name}
+                      </h3>
+                    </div>
+
+                    {item.place.city && (
+                      <div className="fav-card-location">
+                        <MapPin size={13} />
+                        <span>{item.place.city}</span>
+                      </div>
+                    )}
+
+                    {item.place.category && (
+                      <div className="fav-card-tags">
+                        <span className="fav-card-tag">
+                          {item.place.category.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    className={`favorite-btn ${
+                      isFavorite(item.place.id) ? 'active' : ''
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item.place.id);
+                    }}
+                    disabled={isToggling(item.place.id)}
+                    aria-label={
+                      isFavorite(item.place.id)
+                        ? 'Remover dos favoritos'
+                        : 'Adicionar aos favoritos'
+                    }
+                    style={{
+                      opacity: isToggling(item.place.id) ? 0.5 : 1,
+                    }}
+                  >
+                    <Heart
+                      size={20}
+                      fill={
+                        isFavorite(item.place.id)
+                          ? 'currentColor'
+                          : 'none'
+                      }
+                    />
+                  </button>
+                </div>
+              ))}
+          </>
+        )}
       </main>
 
       <nav className="bottom-nav">

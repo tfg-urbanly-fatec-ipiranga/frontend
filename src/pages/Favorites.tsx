@@ -27,6 +27,22 @@ const FavoritesPage: FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const fallbackImage =
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop';
+
+  const getPlaceImage = (place: any) => {
+    // tenta pegar a foto primária
+    const primaryPhoto = place.photos?.find(
+      (photo: any) => photo.isPrimary
+    );
+
+    // se não tiver primária, pega a primeira foto
+    const firstPhoto = place.photos?.[0];
+
+    // se não tiver nenhuma foto, usa fallback
+    return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -161,7 +177,7 @@ const FavoritesPage: FC = () => {
             onClick={() => navigate(`/establishment/${item.place.id}`)}
           >
             <img
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=200&auto=format&fit=crop"
+              src={getPlaceImage(item.place)}
               alt={item.place.name}
               className="fav-card-image"
             />

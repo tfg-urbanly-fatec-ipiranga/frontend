@@ -14,30 +14,28 @@ const AdminReviewsPage = () => {
   const [selectedPlace, setSelectedPlace] = React.useState('all');
 
     async function handleApprove(id: string) {
-    try {
-        await api.post(`/reviews/approve/${id}`);
+      try {
+          await api.patch(`/reviews/${id}/approve`);
 
-        setLocalReviews((prev) => prev.filter((r) => r.id !== id));
+          setLocalReviews((prev) => prev.filter((r) => r.id !== id));
 
-        toast.success('Avaliação aprovada com sucesso');
-    } catch (err) {
-        toast.error('Erro ao aprovar avaliação');
-    }
+          toast.success('Avaliação aprovada com sucesso');
+      } catch (err) {
+          toast.error('Erro ao aprovar avaliação');
+      }
     }
 
   // reject
     async function handleReject(id: string) {
-    try {
-        console.log("REJECT ID:", id);
+      try {
+          await api.patch(`/reviews/${id}/reject`);
 
-        await api.post(`/reviews/reject/${id}`);
+          setLocalReviews((prev) => prev.filter((r) => r.id !== id));
 
-        setLocalReviews((prev) => prev.filter((r) => r.id !== id));
-
-        toast.success('Avaliação rejeitada com sucesso');
-    } catch (err) {
-        toast.error('Erro ao rejeitar avaliação');
-    }
+          toast.success('Avaliação rejeitada com sucesso');
+      } catch (err) {
+          toast.error('Erro ao rejeitar avaliação');
+      }
     }
 
   // estado local para atualizar UI

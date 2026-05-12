@@ -33,6 +33,7 @@ const EditEstablishment: FC = () => {
   >([]);  
   const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
   const [primaryPhoto, setPrimaryPhoto] = useState<string | null>( photos.find((photo: { isPrimary: any; }) => photo.isPrimary)?.id ?? null );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   //const [primaryPhoto, setPrimaryPhoto] = useState<string | null>();
 
@@ -508,25 +509,62 @@ const EditEstablishment: FC = () => {
         <button
           className="delete-button"
           disabled={deleting}
-          onClick={async () => {
-            if (!id) return;
-            const confirmed = window.confirm(
-              'Tem certeza que deseja desativar este estabelecimento? Ele poderá ser restaurado por um administrador.'
-            );
-            if (!confirmed) return;
-            setDeleting(true);
-            try {
-              await api.delete(`/places/${id}`);
-              navigate('/establishments');
-            } catch (err: any) {
-              setErrorMessage(err.response?.data?.message || 'Erro ao desativar estabelecimento');
-              setDeleting(false);
-            }
-          }}
+          onClick={() => setShowDeleteModal(true)}
         >
           <Trash2 size={18} />
           {deleting ? 'Desativando...' : 'Desativar Estabelecimento'}
         </button>
+
+        {showDeleteModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Desativar estabelecimento</h3>
+
+              <p>
+                Tem certeza que deseja desativar este estabelecimento?
+                Ele poderá ser restaurado por um administrador.
+              </p>
+
+              <div className="modal-actions">
+                <button
+                  className="modal-cancel"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="modal-confirm"
+                  disabled={deleting}
+                  onClick={async () => {
+                    if (!id) return;
+
+                    setDeleting(true);
+
+                    try {
+                      await api.delete(`/places/${id}`);
+                      navigate('/establishments');
+                    } catch (err: any) {
+                      setErrorMessage(
+                        err.response?.data?.message ||
+                          'Erro ao desativar estabelecimento'
+                      );
+                    }
+                    finally{
+                      setDeleting(false);
+                      setShowDeleteModal(false);
+
+                    }
+                  }}
+                >
+                  <Trash2 size={18} />
+                  {deleting ? 'Desativando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

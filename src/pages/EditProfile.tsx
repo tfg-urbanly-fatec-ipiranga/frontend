@@ -20,6 +20,7 @@ const EditProfilePage: FC = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { logout } = useAuthContext();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -184,30 +185,7 @@ const EditProfilePage: FC = () => {
   };
 
   const handleDeactivateUser = async () => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      const user = parsed.user || parsed;
-      const confirmed = window.confirm(
-        'Tem certeza que deseja desativar este Usuário? Ele poderá ser restaurado por um administrador.'
-      );
-      if (!confirmed) return;
-        setDeleting(true);
-        try {
-          await api.delete(`/users/${user.id}`);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          logout();
-          setDeleting(false);
-          navigate('/home');
-        } catch (err: any) {
-          setErrorMessage(err.response?.data?.message || 'Erro ao desativar usuário');
-          toast.error(errorMessage);
-          setDeleting(false);
-        }
-    } else {
-      toast.error('Erro ao desativar usuário. Usuário não encontrado.')
-    }
+    setShowDeleteModal(true)
   }
 
   return (
@@ -453,6 +431,59 @@ const EditProfilePage: FC = () => {
               {deleting ? 'Desativando...' : 'Desativar Usuário'}
             </button>
           </div>
+
+        {showDeleteModal && (
+          <div className="modal-delete-overlay">
+            <div className="modal-delete-content">
+              <h3>Desativar usuário</h3>
+
+              <p>
+                Tem certeza que deseja desativar este usuário?
+                Ele poderá ser restaurado por um administrador.
+              </p>
+
+              <div className="modal-actions">
+                <button
+                  className="modal-delete-cancel"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="modal-delete-confirm"
+                  disabled={deleting}
+                  onClick={async () => {
+                    const storedUser = localStorage.getItem('user');
+                    if (storedUser) {
+                      const parsed = JSON.parse(storedUser);
+                      const user = parsed.user || parsed;    
+                        setDeleting(true);
+                        try {
+                          await api.delete(`/users/${user.id}`);
+                          localStorage.removeItem('token');
+                          localStorage.removeItem('user');
+                          logout();
+                          setDeleting(false);
+                          navigate('/home');
+                        } catch (err: any) {
+                          setErrorMessage(err.response?.data?.message || 'Erro ao desativar usuário');
+                          toast.error(errorMessage);
+                          setDeleting(false);
+                        }
+                    } else {
+                      toast.error('Erro ao desativar usuário. Usuário não encontrado.')
+                    }
+                  }}
+                >
+                  <Trash2 size={18} />
+                  {deleting ? 'Desativando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       
     </div>

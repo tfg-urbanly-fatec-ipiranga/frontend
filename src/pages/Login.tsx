@@ -31,7 +31,7 @@ const LoginPage: FC = () => {
   return (
     <div className="login-page">
       <header className="login-header">
-          <button className="back-button" onClick={() => navigate(-1)}>
+          <button className="back-button-login" onClick={() => navigate(-1)}>
             <ArrowLeft size={24} />
           </button>
       </header>

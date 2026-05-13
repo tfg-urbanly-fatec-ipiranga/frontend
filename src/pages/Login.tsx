@@ -1,5 +1,5 @@
 import { useState, type FC } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAuthContext } from '../context/AuthContext';
@@ -31,6 +31,9 @@ const LoginPage: FC = () => {
   return (
     <div className="login-page">
       <header className="login-header">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            <ArrowLeft size={24} />
+          </button>
         <span className="urbanly-text">URBANLY</span>
       </header>
 

@@ -178,3 +178,18 @@
   text-decoration: none;
   font-weight: 700;
 }
+
+.back-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button svg {
+  color: #fff !important;
+  stroke: #fff !important;
+}
+

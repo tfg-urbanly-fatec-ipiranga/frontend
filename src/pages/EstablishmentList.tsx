@@ -244,9 +244,17 @@ const EstablishmentListPage: FC = () => {
               </div>
               <p className="card-description">{place.description}</p>
               <div className="card-tags">
-                {place.placeTags?.map(pt => (
-                  <span key={pt.tag.name} className="card-tag">{pt.tag.name}</span>
+                {place.placeTags?.slice(0, 3).map((pt) => (
+                  <span key={pt.tag.name} className="card-tag">
+                    {pt.tag.name}
+                  </span>
                 ))}
+
+                {place.placeTags && place.placeTags.length > 3 && (
+                  <span className="card-tag more-tags">
+                    +{place.placeTags.length - 3}
+                  </span>
+                )}
               </div>
               <button
                 className={`favorite-btn ${isFavorite(place.id) ? 'active' : ''}`}

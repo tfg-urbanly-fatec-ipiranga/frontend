@@ -9,16 +9,6 @@ import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import './RegisterEstablishment.css';
 import { toast } from 'react-toastify';
 
-// Using the generated paths directly in the component for now
-// In a real app, these would be proper imports or URLs
-/*
-const PLACEHOLDER_IMAGES = [
-  '/coffee_shop_interior_1.png',
-  '/barista_making_coffee_1.png',
-  '/two_coffee_cups_on_table_1.png'
-];
-*/
-
 const RegisterEstablishment: FC = () => {
   const navigate = useNavigate();
   const { createPlace, loading: createLoading, error: createError } = useCreatePlace();

@@ -17,6 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AdminReviewsPage from './pages/AdminReviewsPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import { LocationProvider } from "./context/LocationContext";
 
 function isAdmin(): boolean {
   try {
@@ -39,27 +40,29 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/register-establishment" element={<RegisterEstablishmentPage />} />
-          <Route path="/edit-profile" element={<EditProfilePage />} />
-          <Route path="/edit-establishment/:id" element={<EditEstablishmentPage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/establishments" element={<EstablishmentListPage />} />
-          <Route path="/establishment/:id" element={<EstablishmentDetailsPage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/admin/inactive" element={<AdminRoute><InactiveRecordsPage /></AdminRoute>} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/admin/reviews" element={<AdminRoute><AdminReviewsPage /></AdminRoute>}/>
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-        </Routes>
-      </Router>
-      <ToastContainer position="top-center" autoClose={3000} />
-    </AuthProvider>
+    <LocationProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register-establishment" element={<RegisterEstablishmentPage />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
+            <Route path="/edit-establishment/:id" element={<EditEstablishmentPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/establishments" element={<EstablishmentListPage />} />
+            <Route path="/establishment/:id" element={<EstablishmentDetailsPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/admin/inactive" element={<AdminRoute><InactiveRecordsPage /></AdminRoute>} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/admin/reviews" element={<AdminRoute><AdminReviewsPage /></AdminRoute>}/>
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+          </Routes>
+        </Router>
+        <ToastContainer position="top-center" autoClose={3000} />
+      </AuthProvider>
+    </LocationProvider>
   );
 }
 

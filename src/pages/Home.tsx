@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, type FC } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
 import { Search, SlidersHorizontal, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUserLocation  } from "../context/LocationContext";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAuthContext } from "../context/AuthContext";
@@ -39,6 +40,15 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+const userIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
 interface Tag {
@@ -187,6 +197,8 @@ const HomePage: FC = () => {
   
   // Mantenha os estabelecimentos em um cache (buscados via hook usePlaces)
   const { places: allPlaces } = usePlaces();
+
+  const { location } = useUserLocation();
 
   const { logout, isAuthenticated  } = useAuthContext();
   const storedUser = localStorage.getItem("user");
@@ -440,7 +452,9 @@ const HomePage: FC = () => {
     }
   };
 
-  const defaultPosition: [number, number] = [-23.5505, -46.6333];
+  const defaultPosition: [number, number] = location?
+  [location.latitude, location.longitude]
+  : [-23.5505, -46.6333];
 
   return (
     <div className="home-page">
@@ -469,6 +483,17 @@ const HomePage: FC = () => {
                 </Popup>
               </Marker>
             ))}
+
+            {location && (
+              <Marker
+                position={[location.latitude, location.longitude]}
+                icon={userIcon}
+              >
+                <Popup>
+                  Você está aqui
+                </Popup>
+              </Marker>
+            )}
           <ZoomControl position="bottomright" />
         </MapContainer>
       </div>

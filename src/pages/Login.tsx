@@ -34,7 +34,6 @@ const LoginPage: FC = () => {
           <button className="back-button" onClick={() => navigate(-1)}>
             <ArrowLeft size={24} />
           </button>
-        <span className="urbanly-text">URBANLY</span>
       </header>
 
       <main className="login-card">

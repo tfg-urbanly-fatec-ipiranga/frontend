@@ -199,6 +199,7 @@ const HomePage: FC = () => {
   const { places: allPlaces } = usePlaces();
 
   const { location } = useUserLocation();
+  const [maxDistance, setMaxDistance] = useState(10);
 
   const { logout, isAuthenticated  } = useAuthContext();
   const storedUser = localStorage.getItem("user");
@@ -337,6 +338,30 @@ const HomePage: FC = () => {
     });
   }, [filterBasePlaces]);
 
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const R = 6371;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
 
   // Lógica combinada: busca + chips + filtros avançados
   const displayedPlaces = (() => {
@@ -397,6 +422,19 @@ const HomePage: FC = () => {
               return false;
           }
         });
+      });
+    }
+
+    if (location) {
+      result = result.filter(place => {
+        const distance = calculateDistance(
+          location.latitude,
+          location.longitude,
+          place.latitude,
+          place.longitude
+        );
+
+        return distance <= maxDistance;
       });
     }
 
@@ -644,6 +682,30 @@ const HomePage: FC = () => {
                     </span>
                   </label>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {location && (
+            <div className="filter-section">
+              <div className="filter-section-title">
+                Distância máxima
+              </div>
+
+              <div className="distance-slider-wrapper">
+                <input
+                  type="range"
+                  min={1}
+                  max={50}
+                  step={1}
+                  value={maxDistance}
+                  onChange={(e) => setMaxDistance(Number(e.target.value))}
+                  className="distance-slider"
+                />
+
+                <div className="distance-slider-value">
+                  Até {maxDistance} KM
+                </div>
               </div>
             </div>
           )}

@@ -750,3 +750,21 @@
   justify-content: center;
   z-index: 999; /* garante que fique acima do resto */
 }
+
+.distance-slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.distance-slider {
+  width: 100%;
+  accent-color: #EB6B3D;
+  cursor: pointer;
+}
+
+.distance-slider-value {
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 500;
+}

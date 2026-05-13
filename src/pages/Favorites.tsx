@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type FC } from 'react';
 import { Search, Heart, ArrowLeft, User, Menu, Plus, MapPin, MessageSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useUserLocation  } from "../context/LocationContext";
+import { useNavigate }from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from "../context/AuthContext";
 import './Favorites.css';
@@ -15,6 +16,9 @@ const FavoritesPage: FC = () => {
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
   const isAdmin = parsedUser?.role === 'ADMIN';
+
+  const { location } = useUserLocation();
+
   
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return "";

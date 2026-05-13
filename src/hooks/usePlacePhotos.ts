@@ -73,9 +73,7 @@ export const usePlacePhotos = (placeId: string | undefined) => {
       if (isPrimary){
         formData.append('isPrimary', String(isPrimary));
       }
-
-      console.log('After ',isPrimary);
-
+      
       const response = await api.post('/place-photos', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

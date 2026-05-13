@@ -263,6 +263,7 @@
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 8px;
+  white-space: nowrap;
 }
 
 .card-description {
@@ -279,6 +280,8 @@
   display: flex;
   gap: 6px;
   margin-top: 8px;
+  flex-wrap: nowrap;   
+  overflow: hidden;    
 }
 
 .card-tag {
@@ -288,6 +291,13 @@
   background: #F3F4F6;
   padding: 2px 8px;
   border-radius: 6px;
+  white-space: nowrap; 
+  flex-shrink: 0;      
+}
+
+.more-tags {
+  background: #E5E7EB;
+  color: #374151;
 }
 
 .favorite-btn {

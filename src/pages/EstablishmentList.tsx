@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
 import { useFavorites } from '../hooks/useFavorites';
 import { useAuthContext } from "../context/AuthContext";
+import { useUserLocation } from "../context/LocationContext";
 import { useTags } from '../hooks/useTags';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
@@ -13,6 +14,7 @@ import React from 'react';
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { location: userLocation } = useUserLocation();
   const statePlaces = (location.state as { places?: Place[] } | null)?.places;
 
   const [activeChips, setActiveChips] = useState<string[]>([]);
@@ -75,6 +77,31 @@ const EstablishmentListPage: FC = () => {
     const firstPhoto = place.photos?.[0];
 
     return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
+  };
+
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) => {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const R = 6371;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
   };
 
   const handleFavorites = (
@@ -240,7 +267,16 @@ const EstablishmentListPage: FC = () => {
             <div className="card-info">
               <div className="card-header">
                 <h3 className="card-title">{place.name}</h3>
-                <span className="distance-badge">-- KM</span>
+                <span className="distance-badge">
+                  {userLocation
+                    ? `${calculateDistance(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        place.latitude,
+                        place.longitude
+                      ).toFixed(1)} KM`
+                    : '-- KM'}
+                </span>
               </div>
               <p className="card-description">{place.description}</p>
               <div className="card-tags">

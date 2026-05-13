@@ -1,31 +1,26 @@
 .login-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--accent);
   display: flex;
   flex-direction: column;
   align-items: center;
   font-family: var(--sans);
-  padding: 0;
   margin: 0;
   width: 100%;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .login-header {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 220px;
+  height: 72px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding-top: 20px;
-}
-
-.urbanly-text {
-  color: white;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  padding: 0 20px;
+  z-index: 20;
 }
 
 .login-card {
@@ -38,10 +33,9 @@
   flex-direction: column;
   align-items: center;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 10;
   box-sizing: border-box;
-  flex: 1;
-  margin-bottom: -40px;
+  margin-top: 90px;
+  margin-bottom: 24px;
 }
 
 .logo-container {
@@ -137,10 +131,10 @@
 
 .forgot-password {
   align-self: flex-end;
-  color: var(--accent);
+  color: #059669;
   font-size: 14px;
-  text-decoration: none;
-  font-weight: 500;
+  text-decoration: underline;
+  font-weight: 600;
   margin-top: -10px;
 }
 
@@ -174,8 +168,8 @@
 }
 
 .signup-link {
-  color: var(--accent);
-  text-decoration: none;
+  color: #059669;
+  text-decoration: underline;
   font-weight: 700;
 }
 

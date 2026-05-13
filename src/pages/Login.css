@@ -173,17 +173,13 @@
   font-weight: 700;
 }
 
-.back-button {
+.back-button-login {
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.back-button svg {
-  color: #fff !important;
-  stroke: #fff !important;
+  color: aliceblue;
 }
 

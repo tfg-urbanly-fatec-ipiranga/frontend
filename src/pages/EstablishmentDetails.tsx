@@ -302,6 +302,8 @@ const EstablishmentDetailsPage: FC = () => {
             className={`floating-favorite ${isFavorite(place.id) ? 'active' : ''}`}
             onClick={() => toggleFavorite(place.id)}
             disabled={isToggling(place.id)}
+            aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
           >
             <Heart
               size={24}

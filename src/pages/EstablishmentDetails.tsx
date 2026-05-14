@@ -30,6 +30,8 @@ const EstablishmentDetailsPage: FC = () => {
   const { place, loading: placeLoading, error } = usePlaceDetails(id);
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { photos, loading: photosLoading } = usePlacePhotos(id);
+  const [activeSlide, setActiveSlide] = React.useState(0);
+  const carouselRef = React.useRef<HTMLDivElement | null>(null);
   const { reviews, averageRating, loading: reviewsLoading } = usePlaceReviews(id);
 
   const [showReviewModal, setShowReviewModal] = React.useState(false);
@@ -67,6 +69,26 @@ const EstablishmentDetailsPage: FC = () => {
       window.removeEventListener('resize', checkOverflow);
     };
   }, [tags]);
+
+  React.useEffect(() => {
+    const container = carouselRef.current;
+
+    if (!container) return;
+
+    const handleScroll = () => {
+      const index = Math.round(
+        container.scrollLeft / container.clientWidth
+      );
+
+      setActiveSlide(index);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const submitReview = async () => {
     if (!id) return;
@@ -182,6 +204,29 @@ const EstablishmentDetailsPage: FC = () => {
     ? averageRating.toFixed(1)
     : '0';
   const reviewCount = reviews.length;
+
+  const orderedPhotos = [...photos].sort((a, b) => {
+    if (a.isPrimary) return -1;
+    if (b.isPrimary) return 1;
+    return 0;
+  });
+
+  const gallery = orderedPhotos.length > 0 ? orderedPhotos : [{ url: FALLBACK_IMAGE }];
+
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (!carouselRef.current) return;
+
+    const container = carouselRef.current;
+
+    const scrollAmount = container.clientWidth;
+
+    container.scrollBy({
+      left: direction === 'right'
+        ? scrollAmount
+        : -scrollAmount,
+      behavior: 'smooth',
+    });
+  };
   
 
   return (
@@ -219,23 +264,44 @@ const EstablishmentDetailsPage: FC = () => {
         {/* Hero */}
         <section className="hero-section">
 
-          <div className="hero-carousel">
-            {(photos.length > 0 ? photos : [{ url: FALLBACK_IMAGE }]).map((photo, index) => (
-              <img
-                key={index}
-                src={photo.url}
-                alt={`${place.name} ${index + 1}`}
-                className="hero-image"
-              />
-            ))}
-          </div>
+          <div className="hero-carousel-wrapper">
+
+            {gallery.length > 1 && (
+              <button
+                className="carousel-arrow left"
+                onClick={() => scrollCarousel('left')}
+              >
+                ‹
+              </button>
+            )}
+
+            <div
+              ref={carouselRef}
+              className="hero-carousel"
+            >
+              {gallery.map((photo, index) => (
+                <img
+                  key={index}
+                  src={photo.url}
+                  alt={`${place.name} ${index + 1}`}
+                  className="hero-image"
+                />
+              ))}
+            </div>
+
+            {gallery.length > 1 && (
+              <button
+                className="carousel-arrow right"
+                onClick={() => scrollCarousel('right')}
+              >
+                ›
+              </button>
+            )}
 
           <button
             className={`floating-favorite ${isFavorite(place.id) ? 'active' : ''}`}
             onClick={() => toggleFavorite(place.id)}
             disabled={isToggling(place.id)}
-            aria-label={isFavorite(place.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-            style={{ opacity: isToggling(place.id) ? 0.5 : 1 }}
           >
             <Heart
               size={24}
@@ -243,6 +309,7 @@ const EstablishmentDetailsPage: FC = () => {
             />
           </button>
 
+          </div>
         </section>
 
         {/* Info */}

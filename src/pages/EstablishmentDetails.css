@@ -87,31 +87,114 @@
 .hero-section {
   padding: 20px;
   position: relative;
+  overflow: hidden;
+}
+
+.hero-carousel-wrapper {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-carousel {
+  display: flex;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x mandatory;
+
+  scroll-behavior: smooth;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  border-radius: 32px;
+
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.hero-carousel::-webkit-scrollbar {
+  display: none;
 }
 
 .hero-image {
   width: 100%;
-  aspect-ratio: 16 / 15;
+  min-width: 100%;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
   border-radius: 32px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  font-size: 32px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.carousel-arrow.left {
+  left: 16px;
+}
+
+.carousel-arrow.right {
+  right: 16px;
+}
+
+@media (max-width: 768px) {
+  .carousel-arrow {
+    display: none;
+  }
+  .hero-image {
+    aspect-ratio: 16 / 16;
+  }
 }
 
 .floating-favorite {
   position: absolute;
-  top: 40px;
-  right: 40px;
+
+  top: 20px;
+  right: 20px;
+
   background: white;
+
   width: 44px;
   height: 44px;
+
   border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: #D1D5DB;
+
   border: none;
+
   cursor: pointer;
+
+  z-index: 20;
+
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
   transition: color 0.2s, transform 0.15s;
 }
 
@@ -523,36 +606,6 @@
 .submit-review-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.hero-section {
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-carousel {
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  border-radius: 32px;
-}
-
-.hero-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.hero-image {
-  width: 100%;
-  min-width: 100%;
-  aspect-ratio: 16 / 15;
-  object-fit: cover;
-  border-radius: 32px;
-  scroll-snap-align: start;
-  flex-shrink: 0;
 }
 
 .establishment-price {

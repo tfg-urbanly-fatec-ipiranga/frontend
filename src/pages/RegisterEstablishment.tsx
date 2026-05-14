@@ -34,6 +34,7 @@ const RegisterEstablishment: FC = () => {
     openingTime: '',
     closingTime: '',
     categoryId: '',
+    workingDays: '',
   });
 
   if(tagsLoading){
@@ -219,6 +220,28 @@ const RegisterEstablishment: FC = () => {
                 className="input-element" 
               />
             </div>
+          </div>
+        </div>
+        {/* Campo de Dias de Funcionamento */}
+        <div className="form-group">
+          <label className="form-label">Dias de Funcionamento</label>
+          <div className="select-container">
+            <Clock size={20} className="input-icon" />
+            <select 
+              name="workingDays"
+              value={formData.workingDays}
+              onChange={handleInputChange}
+              className="select-element"
+              required
+            >
+              <option value="">Selecione os dias</option>
+              <option value="Segunda a Sexta">Seg - Sex</option>
+              <option value="Segunda a Sábado">Seg - Sáb</option>
+              <option value="Terça a Domingo">Ter - Dom</option>
+              <option value="Todos os dias">Todos os dias</option>
+              <option value="Finais de Semana">Finais de Semana</option>
+            </select>
+            <ChevronDown size={20} className="chevron-icon" />
           </div>
         </div>
 

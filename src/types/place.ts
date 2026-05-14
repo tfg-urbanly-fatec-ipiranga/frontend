@@ -21,6 +21,7 @@ export interface Place {
   city?: string;
   openingTime: string;
   closingTime: string;
+  workingDays?: string;
   latitude: number;
   longitude: number;
   categoryId?: string;

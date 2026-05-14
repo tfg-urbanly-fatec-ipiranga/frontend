@@ -276,7 +276,15 @@ const EstablishmentDetailsPage: FC = () => {
                 <div className="icon-circle">
                   <Clock size={20} />
                 </div>
-                <span>{hours}</span>
+                {/* Criamos esta div para que o horário e os dias fiquem um embaixo do outro */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 600 }}>{hours}</span>
+                  
+                  {/* Exibição direta dos dias da semana */}
+                  <span style={{ fontSize: '14px', color: '#da611b' }}>
+                    {place.workingDays || 'Dias não informados'}
+                  </span>
+                </div>
               </div>
             </div>
 

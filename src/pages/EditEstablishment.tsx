@@ -295,7 +295,7 @@ const EditEstablishment: FC = () => {
         <button className="back-button-estab" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title" onClick={() => navigate('/home')}>Urbanly</h1>
+        <h1 className="header-title-estab" onClick={() => navigate('/home')}>Editar Estabelecimento</h1>
       </header>
 
       <main className="establishment-card">

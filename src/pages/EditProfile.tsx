@@ -194,7 +194,7 @@ const EditProfilePage: FC = () => {
         <button className="back-button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title" onClick={() => navigate('/home')} style={{ left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '20px', color: 'white', fontWeight: 700 }}>Urbanly</h1>
+        <h1 className="header-title" onClick={() => navigate('/home')} style={{ left: '50%', transform: 'translateX(-50%)', margin: 0, fontSize: '24px', color: 'white', fontWeight: 700 }}>Editar Perfil</h1>
           <button
             className="logout-button"
             onClick={() => {
@@ -323,7 +323,11 @@ const EditProfilePage: FC = () => {
               {loadingAuth? 'Salvando alterações...' : 'Salvar alterações'} <ArrowRight size={20} />
             </button>
           ) : (
-            <button type="button" className="save-button" onClick={handleEditing} style={{ backgroundColor: '#6B7280' }}>
+            <button
+              type="button"
+              className="save-button edit-mode-button"
+              onClick={handleEditing}
+            >
               Editar Perfil <ArrowRight size={20} />
             </button>
           )}

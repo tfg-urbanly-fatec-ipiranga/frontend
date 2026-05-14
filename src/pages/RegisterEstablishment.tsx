@@ -137,13 +137,13 @@ const RegisterEstablishment: FC = () => {
         <button className="back-button-estab" type="button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
-        <h1 className="header-title" onClick={() => navigate('/home')}>Urbanly</h1>
+        <h1 className="header-title-estab" onClick={() => navigate('/home')}>Registrar Estabelecimento</h1>
       </header>
 
       <main className="establishment-card">
         <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label">Nome</label>
+          <label className="form-label-estab">Nome</label>
           <div className="input-container">
             <Building2 size={20} className="input-icon" />
             <input 
@@ -159,7 +159,7 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Descrição</label>
+          <label className="form-label-estab">Descrição</label>
           <textarea 
             name="description"
             value={formData.description}
@@ -172,7 +172,7 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Endereço</label>
+          <label className="form-label-estab">Endereço</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
             <input 
@@ -188,7 +188,7 @@ const RegisterEstablishment: FC = () => {
         </div>
         
         <div className="form-group">
-          <label className="form-label">Cidade</label>
+          <label className="form-label-estab">Cidade</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
             <input 
@@ -205,7 +205,7 @@ const RegisterEstablishment: FC = () => {
 
         <div style={{ display: 'flex', gap: '16px' }}>
           <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Abre às</label>
+            <label className="form-label-estab">Abre às</label>
             <div className="input-container">
               <Clock size={20} className="input-icon" />
               <input 
@@ -220,7 +220,7 @@ const RegisterEstablishment: FC = () => {
             </div>
           </div>
           <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Fecha às</label>
+            <label className="form-label-estab">Fecha às</label>
             <div className="input-container">
               <Clock size={20} className="input-icon" />
               <input 
@@ -237,7 +237,7 @@ const RegisterEstablishment: FC = () => {
         </div>
         {/* Campo de Dias de Funcionamento */}
         <div className="form-group">
-          <label className="form-label">Dias de Funcionamento</label>
+          <label className="form-label-estab">Dias de Funcionamento</label>
           <div className="select-container">
             <Clock size={20} className="input-icon" />
             <select 
@@ -259,7 +259,7 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Categoria</label>
+          <label className="form-label-estab">Categoria</label>
           <div className="select-container">
             <Coffee size={20} className="input-icon" />
             <select 
@@ -280,7 +280,7 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Preço</label>
+          <label className="form-label-estab">Preço</label>
 
           <div className="select-container">
             <span className="input-icon">$</span>
@@ -304,7 +304,7 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Palavras-chave / Tags</label>
+          <label className="form-label-estab">Palavras-chave / Tags</label>
           <div className="tags-section">
             {tags.map(tag => (
               <span
@@ -326,7 +326,7 @@ const RegisterEstablishment: FC = () => {
 
 
         <div className="form-group">
-          <label className="form-label">Galeria de fotos</label>
+          <label className="form-label-estab">Galeria de fotos</label>
 
           <input
             type="file"

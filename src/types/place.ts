@@ -22,6 +22,7 @@ export interface Place {
   openingTime: string;
   closingTime: string;
   workingDays?: string;
+  priceLevel: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
   latitude: number;
   longitude: number;
   categoryId?: string;

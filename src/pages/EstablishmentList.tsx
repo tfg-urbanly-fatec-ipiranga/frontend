@@ -11,6 +11,17 @@ import './EstablishmentList.css';
 import BottomNav from '../components/BottomNav';
 import React from 'react';
 
+const getPriceLabel = (level?: string) => {
+  switch (level) {
+    case 'ONE': return '$';
+    case 'TWO': return '$$';
+    case 'THREE': return '$$$';
+    case 'FOUR': return '$$$$';
+    case 'FIVE': return '$$$$$';
+    default: return '';
+  }
+};
+
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -265,6 +276,13 @@ const EstablishmentListPage: FC = () => {
             
             <img src={getPlaceImage(place)} alt={place.name} className="card-image"/>
             <div className="card-info">
+              {place.priceLevel && (
+                <div className="card-price">
+                  <span className="price-icon">
+                    {getPriceLabel(place.priceLevel)}
+                  </span>
+                </div>
+              )}
               <div className="card-header">
                 <h3 className="card-title">{place.name}</h3>
                 <span className="distance-badge">
@@ -277,6 +295,7 @@ const EstablishmentListPage: FC = () => {
                       ).toFixed(1)} KM`
                     : '-- KM'}
                 </span>
+                
               </div>
               <p className="card-description">{place.description}</p>
               <div className="card-tags">

@@ -1,4 +1,5 @@
 .edit-establishment-page {
+  all: unset;
   min-height: 100vh;
   background-color: #F8F5F2;
   display: flex;
@@ -23,12 +24,12 @@
   border-bottom-right-radius: 40px;
 }
 
-.back-button {
+.back-button-estab {
   position: absolute;
   left: 24px;
   top: 50%;
   transform: translateY(-50%);
-  color: white;
+  color: #fff;
   background: none;
   border: none;
   cursor: pointer;

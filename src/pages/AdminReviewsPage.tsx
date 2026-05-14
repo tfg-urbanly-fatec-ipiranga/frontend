@@ -9,32 +9,42 @@ import { toast } from 'react-toastify';
 const AdminReviewsPage = () => {
   const navigate = useNavigate();
 
+  const [actionLoading, setActionLoading] = React.useState<string | null>(null);
+
   const { reviews, loading, error } = usePendingReviews();
 
   const [selectedPlace, setSelectedPlace] = React.useState('all');
 
     async function handleApprove(id: string) {
       try {
-          await api.patch(`/reviews/${id}/approve`);
+        setActionLoading(`approve-${id}`);
 
-          setLocalReviews((prev) => prev.filter((r) => r.id !== id));
+        await api.patch(`/reviews/${id}/approve`);
 
-          toast.success('Avaliação aprovada com sucesso');
-      } catch (err) {
-          toast.error('Erro ao aprovar avaliação');
+        setLocalReviews((prev) => prev.filter((r) => r.id !== id));
+
+        toast.success('Avaliação aprovada com sucesso');
+      } catch {
+        toast.error('Erro ao aprovar avaliação');
+      } finally {
+        setActionLoading(null);
       }
     }
 
   // reject
     async function handleReject(id: string) {
       try {
-          await api.patch(`/reviews/${id}/reject`);
+        setActionLoading(`reject-${id}`);
 
-          setLocalReviews((prev) => prev.filter((r) => r.id !== id));
+        await api.patch(`/reviews/${id}/reject`);
 
-          toast.success('Avaliação rejeitada com sucesso');
-      } catch (err) {
-          toast.error('Erro ao rejeitar avaliação');
+        setLocalReviews((prev) => prev.filter((r) => r.id !== id));
+
+        toast.success('Avaliação rejeitada com sucesso');
+      } catch {
+        toast.error('Erro ao rejeitar avaliação');
+      } finally {
+        setActionLoading(null);
       }
     }
 
@@ -53,10 +63,12 @@ const AdminReviewsPage = () => {
       map.set(r.place.id, r.place.name);
     });
 
-    return Array.from(map.entries()).map(([id, name]) => ({
-      id,
-      name,
-    }));
+    return Array.from(map.entries())
+      .map(([id, name]) => ({
+        id,
+        name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   }, [localReviews]);
 
   // filtro por estabelecimento
@@ -94,7 +106,9 @@ const AdminReviewsPage = () => {
             value={selectedPlace}
             onChange={(e) => setSelectedPlace(e.target.value)}
             className="admin-search-input"
+            
           >
+            <span className="admin-select-arrow">⌄</span>
             <option value="all">Todos os estabelecimentos</option>
 
             {places.map((place) => (
@@ -170,17 +184,31 @@ const AdminReviewsPage = () => {
               <button
                 className="approve-review-button"
                 onClick={() => handleApprove(review.id)}
+                disabled={actionLoading !== null}
               >
-                <Check size={18} />
-                Aprovar
+                {actionLoading === `approve-${review.id}` ? (
+                  <div className="button-spinner" />
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Aprovar
+                  </>
+                )}
               </button>
 
               <button
                 className="reject-review-button"
                 onClick={() => handleReject(review.id)}
+                disabled={actionLoading !== null}
               >
-                <X size={18} />
-                Rejeitar
+                {actionLoading === `reject-${review.id}` ? (
+                  <div className="button-spinner" />
+                ) : (
+                  <>
+                    <X size={18} />
+                    Rejeitar
+                  </>
+                )}
               </button>
 
             </div>

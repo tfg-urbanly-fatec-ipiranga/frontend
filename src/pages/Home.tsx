@@ -33,6 +33,14 @@ const MapBoundsHandler: FC<{ onBoundsChange: (bounds: L.LatLngBounds) => void }>
   return null;
 };
 
+const priceOptions = [
+  { label: '$', value: 'ONE' },
+  { label: '$$', value: 'TWO' },
+  { label: '$$$', value: 'THREE' },
+  { label: '$$$$', value: 'FOUR' },
+  { label: '$$$$$', value: 'FIVE' },
+];
+
 // Fix for default marker icon issues in Leaflet with React
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
@@ -57,6 +65,7 @@ interface Tag {
 }
 
 interface Place {
+  priceLevel: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
   id: string;
   name: string;
   description?: string;
@@ -201,6 +210,8 @@ const HomePage: FC = () => {
   const { location } = useUserLocation();
   const [maxDistance, setMaxDistance] = useState(10);
 
+  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
+
   const { logout, isAuthenticated  } = useAuthContext();
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
@@ -307,6 +318,16 @@ const HomePage: FC = () => {
       )],
     [filterBasePlaces]
   );
+
+  const availablePrices = useMemo(() => {
+    if (!filterBasePlaces.length) return [];
+
+    return priceOptions.filter(option =>
+      filterBasePlaces.some(
+        place => place.priceLevel === option.value
+      )
+    );
+  }, [filterBasePlaces]);
 
   const availableRatings = useMemo(() => {
     if (!filterBasePlaces.length) return [];
@@ -436,6 +457,13 @@ const HomePage: FC = () => {
 
         return distance <= maxDistance;
       });
+    }
+
+    if (selectedPrices.length > 0) {
+      result = result.filter(place =>
+        place.priceLevel &&
+        selectedPrices.includes(place.priceLevel)
+      );
     }
 
     return result;
@@ -686,6 +714,40 @@ const HomePage: FC = () => {
             </div>
           )}
 
+          {availablePrices.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-section-title">Preço médio</div>
+
+              <div className="filter-options">
+                {availablePrices.map(option => (
+                  <label key={option.value} className="filter-option">
+                    <input
+                      type="checkbox"
+                      checked={selectedPrices.includes(option.value)}
+                      onChange={() =>
+                        setSelectedPrices(prev =>
+                          prev.includes(option.value)
+                            ? prev.filter(v => v !== option.value)
+                            : [...prev, option.value]
+                        )
+                      }
+                    />
+
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        letterSpacing: '0.5px',
+                        color: '#15803D'
+                      }}
+                    >
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {location && (
             <div className="filter-section">
               <div className="filter-section-title">
@@ -710,7 +772,7 @@ const HomePage: FC = () => {
             </div>
           )}
 
-          {availableCities.length === 0 && availableCategories.length === 0 && (
+          {availableCities.length === 0 && availableCategories.length === 0 && availableRatings.length === 0 && availablePrices.length === 0&& (
             <p className="filter-empty">
               Nenhum filtro disponível para esses resultados.
             </p>
@@ -722,6 +784,8 @@ const HomePage: FC = () => {
                   onClick={() => {
                     setSelectedCities([])
                     setSelectedCategories([]);
+                    setSelectedRatings([]);
+                    setSelectedPrices([]);
                   }}             
                 >
                   Limpar

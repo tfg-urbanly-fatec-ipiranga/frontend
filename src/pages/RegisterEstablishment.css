@@ -233,7 +233,10 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(240, 93, 36, 0.3);
   transition: all 0.2s ease;
-  margin-top: 10px;
+
+  width: 100%;
+  max-width: 320px;
+  margin: 20px auto 0 auto;
 }
 
 .register-button:active {

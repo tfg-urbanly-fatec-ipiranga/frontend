@@ -386,6 +386,19 @@
   color: white;
 }
 
+.card-price {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #FACC15; 
+
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -396,3 +409,4 @@
     transform: scale(1);
   }
 }
+

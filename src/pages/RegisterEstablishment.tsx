@@ -9,6 +9,18 @@ import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import './RegisterEstablishment.css';
 import { toast } from 'react-toastify';
 
+
+const getPriceLabel = (level?: string) => {
+  switch (level) {
+    case 'ONE': return '$';
+    case 'TWO': return '$$';
+    case 'THREE': return '$$$';
+    case 'FOUR': return '$$$$';
+    case 'FIVE': return '$$$$$';
+    default: return '—';
+  }
+};
+
 const RegisterEstablishment: FC = () => {
   const navigate = useNavigate();
   const { createPlace, loading: createLoading, error: createError } = useCreatePlace();
@@ -35,6 +47,7 @@ const RegisterEstablishment: FC = () => {
     closingTime: '',
     categoryId: '',
     workingDays: '',
+    priceLevel: '',
   });
 
   if(tagsLoading){
@@ -121,7 +134,7 @@ const RegisterEstablishment: FC = () => {
   return (
     <div className="register-establishment-page">
       <header className="establishment-header">
-        <button className="back-button" type="button" onClick={() => navigate(-1)}>
+        <button className="back-button-estab" type="button" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
         <h1 className="header-title" onClick={() => navigate('/home')}>Urbanly</h1>
@@ -262,6 +275,30 @@ const RegisterEstablishment: FC = () => {
                 </option>
               ))}
             </select>
+            <ChevronDown size={20} className="chevron-icon" />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Preço</label>
+
+          <div className="select-container">
+            <span className="input-icon">$</span>
+
+            <select
+              name="priceLevel"
+              value={formData.priceLevel}
+              onChange={handleInputChange}
+              className="select-element"
+            >
+              <option value="">Selecione o preço</option>
+              <option value="ONE">$</option>
+              <option value="TWO">$$</option>
+              <option value="THREE">$$$</option>
+              <option value="FOUR">$$$$</option>
+              <option value="FIVE">$$$$$</option>
+            </select>
+
             <ChevronDown size={20} className="chevron-icon" />
           </div>
         </div>

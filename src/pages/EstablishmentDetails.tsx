@@ -12,6 +12,17 @@ import { toast } from 'react-toastify';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&auto=format&fit=crop';
 
+const getPriceLabel = (level?: string) => {
+  switch (level) {
+    case 'ONE': return '$';
+    case 'TWO': return '$$';
+    case 'THREE': return '$$$';
+    case 'FOUR': return '$$$$';
+    case 'FIVE': return '$$$$$';
+    default: return '—';
+  }
+};
+
 const EstablishmentDetailsPage: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -238,7 +249,10 @@ const EstablishmentDetailsPage: FC = () => {
         <section className="info-section">
           <div className="info-header">
             <h1 className="establishment-name">{place.name}</h1>
-            {place.active && <span className="status-badge">Aberto</span>}
+            <span className = "establishment-price">
+              {getPriceLabel(place.priceLevel)}
+            </span>
+          
           </div>
 
           <div className="meta-info">

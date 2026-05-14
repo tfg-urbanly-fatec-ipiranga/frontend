@@ -554,3 +554,11 @@
   scroll-snap-align: start;
   flex-shrink: 0;
 }
+
+.establishment-price {
+  font-size: 25px;
+  font-weight: 800;
+  color: #e9c41f;
+  margin: 0;
+  flex: 2;
+}

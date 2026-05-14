@@ -12,6 +12,17 @@ import { toast } from 'react-toastify';
 import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import type { PlacePhoto } from '../types/placePhoto';
 
+const getPriceLabel = (level?: string) => {
+  switch (level) {
+    case 'ONE': return '$';
+    case 'TWO': return '$$';
+    case 'THREE': return '$$$';
+    case 'FOUR': return '$$$$';
+    case 'FIVE': return '$$$$$';
+    default: return '';
+  }
+};
+
 const EditEstablishment: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -82,7 +93,7 @@ const EditEstablishment: FC = () => {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
         <p style={{ color: 'red' }}>{placeError}</p>
-        <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
+        <button className="back-button-estab" onClick={() => navigate(-1)}>Voltar</button>
       </div>
     );
   }
@@ -91,7 +102,7 @@ const EditEstablishment: FC = () => {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
         <p style={{ color: 'red' }}>Estabelecimento não encontrado.</p>
-        <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
+        <button className="back-button-estab" onClick={() => navigate(-1)}>Voltar</button>
       </div>
     );
   }
@@ -132,7 +143,7 @@ const EditEstablishment: FC = () => {
     return (
       <div className="edit-establishment-page" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '16px' }}>
         <p style={{ color: 'red' }}>{errorUpdate}</p>
-        <button className="back-button" onClick={() => navigate(-1)}>Voltar</button>
+        <button className="back-button-estab" onClick={() => navigate(-1)}>Voltar</button>
       </div>
     );
   }
@@ -141,6 +152,7 @@ const EditEstablishment: FC = () => {
     if (!id) return;
     setIsSaving(true);
 
+    const priceLevel = (document.querySelector('select[name="priceLevel"]') as HTMLSelectElement)?.value;
     const workingDays = (document.querySelector('select[name="workingDays"]') as HTMLSelectElement)?.value;
     const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
     const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
@@ -165,6 +177,7 @@ const EditEstablishment: FC = () => {
       closingTime,
       categoryId: categoryId || undefined,
       workingDays,
+      priceLevel,
     };
 
     const updated = await updatePlace(id, payload);
@@ -279,7 +292,7 @@ const EditEstablishment: FC = () => {
   return (
     <div className="edit-establishment-page">
       <header className="establishment-header">
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <button className="back-button-estab" onClick={() => navigate(-1)}>
           <ArrowLeft size={24} />
         </button>
         <h1 className="header-title" onClick={() => navigate('/home')}>Urbanly</h1>
@@ -382,6 +395,26 @@ const EditEstablishment: FC = () => {
                 </option>
               ))}
             </select>
+            <ChevronDown size={20} className="chevron-icon" />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Preço</label>
+
+          <div className="select-container">
+            <select
+              name="priceLevel"
+              className="select-element"
+              defaultValue={place.priceLevel || ''}
+            >
+              <option value="ONE">$</option>
+              <option value="TWO">$$</option>
+              <option value="THREE">$$$</option>
+              <option value="FOUR">$$$$</option>
+              <option value="FIVE">$$$$$</option>
+            </select>
+
             <ChevronDown size={20} className="chevron-icon" />
           </div>
         </div>

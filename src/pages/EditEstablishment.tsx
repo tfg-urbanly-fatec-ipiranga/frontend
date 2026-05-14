@@ -141,13 +141,14 @@ const EditEstablishment: FC = () => {
     if (!id) return;
     setIsSaving(true);
 
+    const workingDays = (document.querySelector('select[name="workingDays"]') as HTMLSelectElement)?.value;
     const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
     const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
     const city = (document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement)?.value.trim();
     const address = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
     const openingTime = (document.querySelector('input[name="openingTime"]') as HTMLInputElement)?.value;
     const closingTime = (document.querySelector('input[name="closingTime"]') as HTMLInputElement)?.value;
-    const categoryId = (document.querySelector('select') as HTMLSelectElement)?.value;
+    const categoryId = (document.querySelector('select[name="categoryId"]') as HTMLSelectElement)?.value;
 
     // Validação
     if (!name || !description || !city || !address || !openingTime || !closingTime) {
@@ -163,6 +164,7 @@ const EditEstablishment: FC = () => {
       openingTime,
       closingTime,
       categoryId: categoryId || undefined,
+      workingDays,
     };
 
     const updated = await updatePlace(id, payload);
@@ -342,6 +344,26 @@ const EditEstablishment: FC = () => {
                 className="input-element"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Dias de Funcionamento</label>
+          <div className="select-container">
+            <Clock size={20} className="input-icon" />
+            <select 
+              name="workingDays"
+              className="select-element"
+              defaultValue={place.workingDays || ""}
+            >
+              <option value="">Selecione os dias</option>
+              <option value="Segunda a Sexta">Seg - Sex</option>
+              <option value="Segunda a Sábado">Seg - Sáb</option>
+              <option value="Terça a Domingo">Ter - Dom</option>
+              <option value="Todos os dias">Todos os dias</option>
+              <option value="Finais de Semana">Finais de Semana</option>
+            </select>
+            <ChevronDown size={20} className="chevron-icon" />
           </div>
         </div>
 

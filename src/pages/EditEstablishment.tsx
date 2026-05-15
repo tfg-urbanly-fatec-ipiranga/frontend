@@ -46,6 +46,31 @@ const EditEstablishment: FC = () => {
   const [primaryPhoto, setPrimaryPhoto] = useState<string | null>( photos.find((photo: { isPrimary: any; }) => photo.isPrimary)?.id ?? null );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [workingDaysOpen, setWorkingDaysOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
+
+  const [selectedWorkingDays, setSelectedWorkingDays] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedPrice, setSelectedPrice] = useState('');
+
+  const [openingOpen, setOpeningOpen] = useState(false);
+  const [closingOpen, setClosingOpen] = useState(false);
+
+  const [selectedOpeningTime, setSelectedOpeningTime] = useState('');
+  const [selectedClosingTime, setSelectedClosingTime] = useState('');
+
+  useEffect(() => {
+  if (place) {
+    setSelectedWorkingDays(place.workingDays || '');
+    setSelectedCategory(place.categoryId || '');
+    setSelectedPrice(place.priceLevel || '');
+
+    setSelectedOpeningTime(place.openingTime || '08:00');
+    setSelectedClosingTime(place.closingTime || '18:00');
+  }
+}, [place]);
+
   //const [primaryPhoto, setPrimaryPhoto] = useState<string | null>();
 
   useEffect(() => {
@@ -152,15 +177,15 @@ const EditEstablishment: FC = () => {
     if (!id) return;
     setIsSaving(true);
 
-    const priceLevel = (document.querySelector('select[name="priceLevel"]') as HTMLSelectElement)?.value;
-    const workingDays = (document.querySelector('select[name="workingDays"]') as HTMLSelectElement)?.value;
+    const priceLevel = selectedPrice;
+    const workingDays = selectedWorkingDays;
     const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
     const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
     const city = (document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement)?.value.trim();
     const address = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
-    const openingTime = (document.querySelector('input[name="openingTime"]') as HTMLInputElement)?.value;
-    const closingTime = (document.querySelector('input[name="closingTime"]') as HTMLInputElement)?.value;
-    const categoryId = (document.querySelector('select[name="categoryId"]') as HTMLSelectElement)?.value;
+    const openingTime = selectedOpeningTime;
+    const closingTime = selectedClosingTime;
+    const categoryId = selectedCategory;
 
     // Validação
     if (!name || !description || !city || !address || !openingTime || !closingTime) {
@@ -289,6 +314,27 @@ const EditEstablishment: FC = () => {
     );
   };
 
+  const timeOptions = [
+  '06:00',
+  '07:00',
+  '08:00',
+  '09:00',
+  '10:00',
+  '11:00',
+  '12:00',
+  '13:00',
+  '14:00',
+  '15:00',
+  '16:00',
+  '17:00',
+  '18:00',
+  '19:00',
+  '20:00',
+  '21:00',
+  '22:00',
+  '23:00',
+];
+
   return (
     <div className="edit-establishment-page">
       <header className="establishment-header">
@@ -333,89 +379,293 @@ const EditEstablishment: FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '16px' }}>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Abre às</label>
-            <div className="input-container">
-              <Clock size={20} className="input-icon" />
-              <input 
-                type="time"
-                name="openingTime" 
-                defaultValue={place.openingTime || '08:00'}
-                className="input-element"
-              />
-            </div>
-          </div>
 
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label">Fecha às</label>
-            <div className="input-container">
+        {/* ABERTURA */}
+        <div className="form-group" style={{ flex: 1 }}>
+          <label className="form-label">
+            Abre às
+          </label>
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setOpeningOpen(!openingOpen)
+              }
+            >
               <Clock size={20} className="input-icon" />
-              <input 
-                type="time"
-                name="closingTime" 
-                defaultValue={place.closingTime || '18:00'}
-                className="input-element"
+
+              <span className="custom-select-value">
+                {selectedOpeningTime || '08:00'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
               />
             </div>
+
+            {openingOpen && (
+              <div className="custom-dropdown custom-time-dropdown">
+
+                {timeOptions.map(time => (
+                  <div
+                    key={time}
+                    className={`custom-option ${
+                      selectedOpeningTime === time
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedOpeningTime(time);
+                      setOpeningOpen(false);
+                    }}
+                  >
+                    {time}
+                  </div>
+                ))}
+
+              </div>
+            )}
+
           </div>
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Dias de Funcionamento</label>
-          <div className="select-container">
-            <Clock size={20} className="input-icon" />
-            <select 
-              name="workingDays"
-              className="select-element"
-              defaultValue={place.workingDays || ""}
+        {/* FECHAMENTO */}
+        <div className="form-group" style={{ flex: 1 }}>
+          <label className="form-label">
+            Fecha às
+          </label>
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setClosingOpen(!closingOpen)
+              }
             >
-              <option value="">Selecione os dias</option>
-              <option value="Segunda a Sexta">Seg - Sex</option>
-              <option value="Segunda a Sábado">Seg - Sáb</option>
-              <option value="Terça a Domingo">Ter - Dom</option>
-              <option value="Todos os dias">Todos os dias</option>
-              <option value="Finais de Semana">Finais de Semana</option>
-            </select>
-            <ChevronDown size={20} className="chevron-icon" />
+              <Clock size={20} className="input-icon" />
+
+              <span className="custom-select-value">
+                {selectedClosingTime || '18:00'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {closingOpen && (
+              <div className="custom-dropdown custom-time-dropdown">
+
+                {timeOptions.map(time => (
+                  <div
+                    key={time}
+                    className={`custom-option ${
+                      selectedClosingTime === time
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedClosingTime(time);
+                      setClosingOpen(false);
+                    }}
+                  >
+                    {time}
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+          </div>
+        </div>
+
+</div>
+        <div className="form-group">
+          <label className="form-label">
+            Dias de Funcionamento
+          </label>
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setWorkingDaysOpen(!workingDaysOpen)
+              }
+            >
+              <Clock size={20} className="input-icon" />
+
+              <span
+                className={`custom-select-value ${
+                  !selectedWorkingDays
+                    ? 'placeholder'
+                    : ''
+                }`}
+              >
+                {selectedWorkingDays || 'Selecione os dias'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {workingDaysOpen && (
+              <div className="custom-dropdown">
+
+                {[
+                  'Seg - Sex',
+                  'Seg - Sáb',
+                  'Ter - Dom',
+                  'Todos os dias',
+                  'Finais de Semana'
+                ].map((option) => (
+                  <div
+                    key={option}
+                    className={`custom-option ${
+                      selectedWorkingDays === option
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedWorkingDays(option);
+                      setWorkingDaysOpen(false);
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+
+              </div>
+            )}
           </div>
         </div>
 
         <div className="form-group">
           <label className="form-label">Categoria</label>
-          <div className="select-container">
-            <Coffee size={20} className="input-icon" />
-            <select 
-              className="select-element" 
-              defaultValue={place.categoryId || ''}
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setCategoryOpen(!categoryOpen)
+              }
             >
-              <option value="">Selecione uma categoria (opcional)</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={20} className="chevron-icon" />
+              <Coffee size={20} className="input-icon" />
+
+              <span
+                className={`custom-select-value ${
+                  !selectedCategory
+                    ? 'placeholder'
+                    : ''
+                }`}
+              >
+                {
+                  categories.find(
+                    c => c.id === selectedCategory
+                  )?.name ||
+                  'Selecione uma categoria'
+                }
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {categoryOpen && (
+              <div className="custom-dropdown">
+
+                {categories.map(category => (
+                  <div
+                    key={category.id}
+                    className={`custom-option ${
+                      selectedCategory === category.id
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory(category.id);
+                      setCategoryOpen(false);
+                    }}
+                  >
+                    {category.name}
+                  </div>
+                ))}
+
+              </div>
+            )}
+
           </div>
         </div>
 
         <div className="form-group">
           <label className="form-label">Preço</label>
 
-          <div className="select-container">
-            <select
-              name="priceLevel"
-              className="select-element"
-              defaultValue={place.priceLevel || ''}
-            >
-              <option value="ONE">$</option>
-              <option value="TWO">$$</option>
-              <option value="THREE">$$$</option>
-              <option value="FOUR">$$$$</option>
-              <option value="FIVE">$$$$$</option>
-            </select>
+          <div className="custom-select-wrapper">
 
-            <ChevronDown size={20} className="chevron-icon" />
+            <div
+              className="select-container"
+              onClick={() =>
+                setPriceOpen(!priceOpen)
+              }
+            >
+              <span className="input-icon">$</span>
+
+              <span
+                className={`custom-select-value ${
+                  !selectedPrice
+                    ? 'placeholder'
+                    : ''
+                }`}
+              >
+                {getPriceLabel(selectedPrice) ||
+                  'Selecione o preço'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {priceOpen && (
+              <div className="custom-dropdown">
+
+                {[
+                  'ONE',
+                  'TWO',
+                  'THREE',
+                  'FOUR',
+                  'FIVE'
+                ].map((option) => (
+                  <div
+                    key={option}
+                    className={`custom-option ${
+                      selectedPrice === option
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedPrice(option);
+                      setPriceOpen(false);
+                    }}
+                  >
+                    {getPriceLabel(option)}
+                  </div>
+                ))}
+
+              </div>
+            )}
+
           </div>
         </div>
 

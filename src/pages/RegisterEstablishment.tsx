@@ -35,7 +35,26 @@ const RegisterEstablishment: FC = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
+  const [workingDaysOpen, setWorkingDaysOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
 
+
+const [openingOpen, setOpeningOpen] = useState(false);
+const [closingOpen, setClosingOpen] = useState(false);
+
+const timeOptions = [];
+
+for (let hour = 0; hour < 24; hour++) {
+  for (let minute = 0; minute < 60; minute += 30) {
+    const formattedHour = String(hour).padStart(2, '0');
+    const formattedMinute = String(minute).padStart(2, '0');
+
+    timeOptions.push(
+      `${formattedHour}:${formattedMinute}`
+    );
+  }
+}
   
   // Basic Form State
   const [formData, setFormData] = useState({
@@ -204,102 +223,503 @@ const RegisterEstablishment: FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '16px' }}>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label-estab">Abre às</label>
-            <div className="input-container">
-              <Clock size={20} className="input-icon" />
-              <input 
-                type="time" 
-                name="openingTime"
-                value={formData.openingTime}
-                onChange={handleInputChange}
-                required
-                placeholder='08:00'
-                className="input-element" 
-              />
+
+  {/* ABERTURA */}
+  <div className="form-group" style={{ flex: 1 }}>
+    <label className="form-label-estab">
+      Abre às
+    </label>
+
+    <div className="custom-select-wrapper">
+
+      <div
+        className="select-container"
+        onClick={() =>
+          setOpeningOpen(!openingOpen)
+        }
+      >
+        <Clock size={20} className="input-icon" />
+
+        <span
+          className={`custom-select-value ${
+            !formData.openingTime
+              ? 'placeholder'
+              : ''
+          }`}
+        >
+          {formData.openingTime || '08:00'}
+        </span>
+
+        <ChevronDown
+          size={20}
+          className="chevron-icon"
+        />
+      </div>
+
+      {openingOpen && (
+        <div className="custom-dropdown custom-time-dropdown">
+
+          {timeOptions.map(time => (
+            <div
+              key={time}
+              className={`custom-option ${
+                formData.openingTime === time
+                  ? 'active'
+                  : ''
+              }`}
+              onClick={() => {
+                setFormData(prev => ({
+                  ...prev,
+                  openingTime: time,
+                }));
+
+                setOpeningOpen(false);
+              }}
+            >
+              {time}
             </div>
-          </div>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label className="form-label-estab">Fecha às</label>
-            <div className="input-container">
-              <Clock size={20} className="input-icon" />
-              <input 
-                type="time" 
-                name="closingTime"
-                value={formData.closingTime}
-                onChange={handleInputChange}
-                required
-                placeholder='18:00'
-                className="input-element" 
-              />
-            </div>
-          </div>
+          ))}
+
         </div>
+      )}
+
+    </div>
+  </div>
+
+  {/* FECHAMENTO */}
+  <div className="form-group" style={{ flex: 1 }}>
+    <label className="form-label-estab">
+      Fecha às
+    </label>
+
+    <div className="custom-select-wrapper">
+
+      <div
+        className="select-container"
+        onClick={() =>
+          setClosingOpen(!closingOpen)
+        }
+      >
+        <Clock size={20} className="input-icon" />
+
+        <span
+          className={`custom-select-value ${
+            !formData.closingTime
+              ? 'placeholder'
+              : ''
+          }`}
+        >
+          {formData.closingTime || '18:00'}
+        </span>
+
+        <ChevronDown
+          size={20}
+          className="chevron-icon"
+        />
+      </div>
+
+      {closingOpen && (
+        <div className="custom-dropdown custom-time-dropdown">
+
+          {timeOptions.map(time => (
+            <div
+              key={time}
+              className={`custom-option ${
+                formData.closingTime === time
+                  ? 'active'
+                  : ''
+              }`}
+              onClick={() => {
+                setFormData(prev => ({
+                  ...prev,
+                  closingTime: time,
+                }));
+
+                setClosingOpen(false);
+              }}
+            >
+              {time}
+            </div>
+          ))}
+
+        </div>
+      )}
+
+    </div>
+  </div>
+
+</div>
+
         {/* Campo de Dias de Funcionamento */}
         <div className="form-group">
-          <label className="form-label-estab">Dias de Funcionamento</label>
-          <div className="select-container">
-            <Clock size={20} className="input-icon" />
-            <select 
-              name="workingDays"
-              value={formData.workingDays}
-              onChange={handleInputChange}
-              className="select-element"
-              required
+          <label className="form-label-estab">
+            Dias de Funcionamento
+          </label>
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setWorkingDaysOpen(!workingDaysOpen)
+              }
             >
-              <option value="">Selecione os dias</option>
-              <option value="Segunda a Sexta">Seg - Sex</option>
-              <option value="Segunda a Sábado">Seg - Sáb</option>
-              <option value="Terça a Domingo">Ter - Dom</option>
-              <option value="Todos os dias">Todos os dias</option>
-              <option value="Finais de Semana">Finais de Semana</option>
-            </select>
-            <ChevronDown size={20} className="chevron-icon" />
+              <Clock size={20} className="input-icon" />
+
+              <span
+                className={`custom-select-value ${
+                  !formData.workingDays ? 'placeholder' : ''
+                }`}
+              >
+                {formData.workingDays || 'Selecione os dias'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {workingDaysOpen && (
+              <div className="custom-dropdown">
+
+                <div
+                  className={`custom-option ${
+                    formData.workingDays ===
+                    'Seg - Sex'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      workingDays: 'Seg - Sex',
+                    }));
+
+                    setWorkingDaysOpen(false);
+                  }}
+                >
+                  Seg - Sex
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.workingDays ===
+                    'Seg - Sáb'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      workingDays: 'Seg - Sáb',
+                    }));
+
+                    setWorkingDaysOpen(false);
+                  }}
+                >
+                  Seg - Sáb
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.workingDays ===
+                    'Ter - Dom'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      workingDays: 'Ter - Dom',
+                    }));
+
+                    setWorkingDaysOpen(false);
+                  }}
+                >
+                  Ter - Dom
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.workingDays ===
+                    'Todos os dias'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      workingDays: 'Todos os dias',
+                    }));
+
+                    setWorkingDaysOpen(false);
+                  }}
+                >
+                  Todos os dias
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.workingDays ===
+                    'Finais de Semana'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      workingDays: 'Finais de Semana',
+                    }));
+
+                    setWorkingDaysOpen(false);
+                  }}
+                >
+                  Finais de Semana
+                </div>
+
+              </div>
+            )}
+
           </div>
         </div>
 
+        {/* Campo de Categoria */}
         <div className="form-group">
-          <label className="form-label-estab">Categoria</label>
-          <div className="select-container">
-            <Coffee size={20} className="input-icon" />
-            <select 
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleInputChange}
-              className="select-element"
+          <label className="form-label-estab">
+            Categoria
+          </label>
+
+          <div className="custom-select-wrapper">
+
+            <div
+              className="select-container"
+              onClick={() =>
+                setCategoryOpen(!categoryOpen)
+              }
             >
-              <option value="">Selecione uma categoria (opcional)</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={20} className="chevron-icon" />
+              <Coffee size={20} className="input-icon" />
+
+              <span
+                className={`custom-select-value ${
+                  !formData.categoryId
+                    ? 'placeholder'
+                    : ''
+                }`}
+              >
+                {formData.categoryId
+                  ? categories.find(
+                      category =>
+                        category.id ===
+                        formData.categoryId
+                    )?.name
+                  : 'Selecione uma categoria'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {categoryOpen && (
+              <div className="custom-dropdown">
+
+                <div
+                  className={`custom-option ${
+                    formData.categoryId === ''
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      categoryId: '',
+                    }));
+
+                    setCategoryOpen(false);
+                  }}
+                >
+                  Sem categoria
+                </div>
+
+                {categories.map(category => (
+                  <div
+                    key={category.id}
+                    className={`custom-option ${
+                      formData.categoryId ===
+                      category.id
+                        ? 'active'
+                        : ''
+                    }`}
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        categoryId: category.id,
+                      }));
+
+                      setCategoryOpen(false);
+                    }}
+                  >
+                    {category.name}
+                  </div>
+                ))}
+
+              </div>
+            )}
+
           </div>
         </div>
 
+
+        {/* Campo de Preço */}    
         <div className="form-group">
-          <label className="form-label-estab">Preço</label>
+          <label className="form-label-estab">
+            Preço
+          </label>
 
-          <div className="select-container">
-            <span className="input-icon">$</span>
+          <div className="custom-select-wrapper">
 
-            <select
-              name="priceLevel"
-              value={formData.priceLevel}
-              onChange={handleInputChange}
-              className="select-element"
+            <div
+              className="select-container"
+              onClick={() =>
+                setPriceOpen(!priceOpen)
+              }
             >
-              <option value="">Selecione o preço</option>
-              <option value="ONE">$</option>
-              <option value="TWO">$$</option>
-              <option value="THREE">$$$</option>
-              <option value="FOUR">$$$$</option>
-              <option value="FIVE">$$$$$</option>
-            </select>
+              <span className="input-icon">$</span>
 
-            <ChevronDown size={20} className="chevron-icon" />
+              <span
+                className={`custom-select-value ${
+                  !formData.priceLevel
+                    ? 'placeholder'
+                    : ''
+                }`}
+              >
+                {formData.priceLevel
+                  ? getPriceLabel(formData.priceLevel)
+                  : 'Selecione o preço'}
+              </span>
+
+              <ChevronDown
+                size={20}
+                className="chevron-icon"
+              />
+            </div>
+
+            {priceOpen && (
+              <div className="custom-dropdown">
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === ''
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: '',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  Sem preço
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === 'ONE'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: 'ONE',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  $
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === 'TWO'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: 'TWO',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  $$
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === 'THREE'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: 'THREE',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  $$$
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === 'FOUR'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: 'FOUR',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  $$$$
+                </div>
+
+                <div
+                  className={`custom-option ${
+                    formData.priceLevel === 'FIVE'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      priceLevel: 'FIVE',
+                    }));
+
+                    setPriceOpen(false);
+                  }}
+                >
+                  $$$$$
+                </div>
+
+              </div>
+            )}
+
           </div>
         </div>
 

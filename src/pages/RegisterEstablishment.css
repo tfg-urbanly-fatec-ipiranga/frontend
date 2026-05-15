@@ -71,6 +71,9 @@
 }
 
 .header-title-estab {
+  position: absolute;
+  top: 31px;
+
   margin: 0;
 
   color: white;
@@ -81,6 +84,7 @@
 
   text-align: center;
 }
+
 
 /* =========================================
    CARD
@@ -221,11 +225,73 @@
   -moz-appearance: none;
 }
 
-.select-element option {
-  color: #27272a;
-  font-family: var(--sans);
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
 }
 
+.custom-select-value {
+  width: 100%;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #27272a;
+}
+
+.custom-select-value.placeholder {
+  color: #9ca3af;
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: 56px;
+  left: 0;
+
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #ececec;
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.06);
+
+  z-index: 100;
+}
+
+.custom-option {
+  padding: 10px 14px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: #3f3f46;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.custom-option:hover {
+  background: #fdf2ec;
+  color: #d85d34;
+}
+
+.custom-option.active {
+  background: #f7dfd5;
+  color: #c95730;
+}
+
+.custom-time-dropdown {
+  max-height: 220px;
+  overflow-y: auto;
+}
 /* =========================================
    TEXTAREA
 ========================================= */
@@ -288,10 +354,6 @@
     transform 0.15s ease,
     background-color 0.2s ease,
     color 0.2s ease;
-}
-
-.tag:hover {
-  transform: translateY(-1px);
 }
 
 .tag-active {
@@ -448,7 +510,6 @@
 }
 
 .register-button:hover {
-  transform: translateY(-1px);
 
   box-shadow: 0 12px 26px rgba(235, 107, 61, 0.28);
 }

@@ -615,3 +615,27 @@
   margin: 0;
   flex: -1;
 }
+
+.edit-review-button {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #6B7280;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.edit-review-button:hover {
+  background: #f1631118;
+  border-color: #EB6B3D;
+  color: #000000;
+}

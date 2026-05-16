@@ -329,6 +329,104 @@ const HomePage: FC = () => {
     );
   }, [filterBasePlaces]);
 
+type TagStyle = {
+  bg: string;
+  border: string;
+  color: string;
+};
+
+const tagColors: Record<string, TagStyle> = {
+  vegano: {
+    bg: '#ECFDF5',
+    border: '#10B981',
+    color: '#064E3B'
+  },
+
+  saudável: {
+    bg: '#F0FDF4',
+    border: '#22C55E',
+    color: '#14532D'
+  },
+
+  'pet-friendly': {
+    bg: '#FFFBEB',
+    border: '#F59E0B',
+    color: '#78350F'
+  },
+
+  wifi: {
+    bg: '#EFF6FF',
+    border: '#3B82F6',
+    color: '#1E3A8A'
+  },
+
+  acessível: {
+    bg: '#F0F9FF',
+    border: '#0EA5E9',
+    color: '#0C4A6E'
+  },
+
+  delivery: {
+    bg: '#FFF1F2',
+    border: '#E11D48',
+    color: '#881337'
+  },
+
+  brunch: {
+    bg: '#FFFBEB',
+    border: '#FBBF24',
+    color: '#713F12'
+  },
+
+  artesanal: {
+    bg: '#FFF7ED',
+    border: '#F97316',
+    color: '#7C2D12'
+  },
+
+  aconchegante: {
+    bg: '#FDF2F8',
+    border: '#EC4899',
+    color: '#831843'
+  },
+
+  romântico: {
+    bg: '#FCE7F3',
+    border: '#DB2777',
+    color: '#831843'
+  },
+
+  'música ao vivo': {
+    bg: '#F5F3FF',
+    border: '#7C3AED',
+    color: '#3B0764'
+  },
+
+  rooftop: {
+    bg: '#EEF2FF',
+    border: '#4F46E5',
+    color: '#1E1B4B'
+  },
+
+  'ao ar livre': {
+    bg: '#F7FEE7',
+    border: '#84CC16',
+    color: '#365314'
+  },
+
+  família: {
+    bg: '#FFFBEB',
+    border: '#F59E0B',
+    color: '#78350F'
+  },
+
+  estacionamento: {
+    bg: '#F3F4F6',
+    border: '#6B7280',
+    color: '#111827'
+  }
+};
+
   const availableRatings = useMemo(() => {
     if (!filterBasePlaces.length) return [];
 
@@ -607,7 +705,7 @@ const HomePage: FC = () => {
             <Search size={20} className="search-icon" />
             <input
               type="text"
-              placeholder="Procurar lugares"
+              placeholder="Buscar locais..."
               className="search-input"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -813,15 +911,30 @@ const HomePage: FC = () => {
             {loadingTags ? (
               <span className="chip-loading">Carregando...</span>
             ) : (
-              tags.map(tag => (
-                <div
-                  key={tag.id}
-                  className={`chip ${activeChips.includes(tag.name) ? 'active' : ''}`}
-                  onClick={() => toggleChip(tag.name)}
-                >
-                  {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
-                </div>
-              ))
+              tags.map(tag => {
+                const colors = tagColors[tag.name] || {
+                  bg: '#F3F4F6',
+                  color: '#374151'
+                };
+
+                return (
+                  <div
+                    key={tag.id}
+                    className={`chip ${activeChips.includes(tag.name) ? 'active' : ''}`}
+                    onClick={() => toggleChip(tag.name)}
+                    style={
+                      !activeChips.includes(tag.name)
+                        ? {
+                            backgroundColor: colors.bg,
+                            color: colors.color
+                          }
+                        : {}
+                    }
+                  >
+                    {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
+                  </div>
+                );
+              })
             )}
           </div>
         </section>
@@ -855,7 +968,7 @@ const HomePage: FC = () => {
         <div className="menu-overlay" onClick={() => setMenuOpen(false)}>
           <div className="menu-content" onClick={e => e.stopPropagation()}>
             <Link to="/establishments" className="menu-item" onClick={() => setMenuOpen(false)}>
-              <Store size={20} /> Estabelecimento
+              <Store size={20} /> Estabelecimentos
             </Link>
             <div style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '8px 0' }} />
             {isAuthenticated ? (

@@ -71,7 +71,7 @@ const LoginPage: FC = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                placeholder="Digite sua senha" 
+                placeholder="sua_senha" 
                 className="input-field" 
               />
               <button 

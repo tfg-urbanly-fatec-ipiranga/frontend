@@ -55,7 +55,7 @@ const RegisterPage: FC = () => {
               value={formData.firstName}
               onChange={handleInputChange}
               required
-              placeholder="João" 
+              placeholder="Seu nome" 
               className="input-field" 
             />
           </div>
@@ -71,7 +71,7 @@ const RegisterPage: FC = () => {
               value={formData.lastName}
               onChange={handleInputChange}
               required
-              placeholder="Silva" 
+              placeholder="Seu sobrenome" 
               className="input-field" 
             />
           </div>
@@ -87,7 +87,7 @@ const RegisterPage: FC = () => {
               value={formData.username}
               onChange={handleInputChange}
               required
-              placeholder="Login" 
+              placeholder="Seu nome de usuário" 
               className="input-field" 
             />
           </div>
@@ -103,7 +103,7 @@ const RegisterPage: FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              placeholder="joao.silva@email.com" 
+              placeholder="seu@email.com" 
               className="input-field" 
             />
           </div>
@@ -120,7 +120,7 @@ const RegisterPage: FC = () => {
               onChange={handleInputChange}
               required
               minLength={6}
-              placeholder="********" 
+              placeholder="*******" 
               className="input-field" 
             />
             <button 
@@ -139,6 +139,7 @@ const RegisterPage: FC = () => {
             <Calendar size={20} className="input-icon" />
             <input 
               type="date" 
+              lang="pt-BR"
               name="birthDate"
               value={formData.birthDate}
               onChange={handleInputChange}

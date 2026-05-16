@@ -365,7 +365,7 @@ const submitReview = async () => {
           {/* Category */}
           {place.category && (
             <div className="tags-container" style={{ marginTop: tags.length > 0 ? '8px' : '0' }}>
-              <span className="tag-pill" style={{ background: '#EEF2FF', color: '#4F46E5', borderColor: 'rgba(79,70,229,0.1)' }}>
+              <span className="category-pill">
                 {place.category.name}
               </span>
             </div>

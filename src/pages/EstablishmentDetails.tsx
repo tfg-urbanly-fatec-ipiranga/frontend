@@ -9,6 +9,7 @@ import './EstablishmentDetails.css';
 import React, { useEffect, useRef, useState } from 'react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { Pencil } from 'lucide-react';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&auto=format&fit=crop';
 
@@ -39,10 +40,28 @@ const EstablishmentDetailsPage: FC = () => {
   const [comment, setComment] = React.useState('');
   const [submittingReview, setSubmittingReview] = React.useState(false);
 
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+ 
+  const stored = localStorage.getItem('user');
+  const parsed = stored ? JSON.parse(stored) : null;
+  const userId = parsed?.user?.id || parsed?.id;
+
+  const userReview = reviews.find(
+    review => review.user.id === userId
+  );
+
   // Tags come from placeTags[].tag.name
   const tags = place?.placeTags?.map(pt => pt.tag.name) ?? [];
   const tagsRef = useRef<HTMLDivElement | null>(null);
   const [tagsOverflowing, setTagsOverflowing] = useState(false);
+
+
+  const openEditReview = (review: any) => {
+  setEditingReviewId(review.id);
+  setRating(review.rating);
+  setComment(review.comment || '');
+  setShowReviewModal(true);
+};
 
   const formatReviewDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -90,30 +109,27 @@ const EstablishmentDetailsPage: FC = () => {
     };
   }, []);
 
-  const submitReview = async () => {
-    if (!id) return;
+const submitReview = async () => {
+  if (!id) return;
 
-    if (rating === 0) {
-      alert('Selecione uma nota.');
-      return;
-    }
+  if (rating === 0) {
+    toast.error('Selecione uma nota.');
+    return;
+  }
 
-    try {
-      setSubmittingReview(true);
+  try {
+    setSubmittingReview(true);
 
-      const stored = localStorage.getItem('user');
+    if (editingReviewId) {
+      await api.put(`/reviews/${editingReviewId}`, {
+        rating,
+        comment,
+      });
 
-      if (!stored) {
-        alert('Você precisa estar logado.');
-        return;
-      }
-
-      const parsed = JSON.parse(stored);
-
-      const userId =
-        parsed?.user?.id ||
-        parsed?.id;
-
+      toast.success(
+        'Avaliação editada e enviada para nova aprovação.'
+      );
+    } else {
       await api.post('/reviews', {
         userId,
         placeId: id,
@@ -121,22 +137,26 @@ const EstablishmentDetailsPage: FC = () => {
         comment,
       });
 
-      toast.success('Avaliação enviada e pendente de aprovação.');
-
-      setShowReviewModal(false);
-      setRating(0);
-      setComment('');
-
-    } catch (err: any) {
-      console.error(err);
-
-      if (err.response?.status === 409) {
-        toast.error('Você já avaliou este estabelecimento.');
-      } else {
-        toast.error('Erro ao enviar avaliação.');
-      }
+      toast.success(
+        'Avaliação enviada e pendente de aprovação.'
+      );
     }
-  };
+
+    setShowReviewModal(false);
+    setEditingReviewId(null);
+    setRating(0);
+    setComment('');
+
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      toast.error('Você já avaliou este estabelecimento.');
+    } else {
+      toast.error('Erro ao salvar avaliação.');
+    }
+  } finally {
+    setSubmittingReview(false);
+  }
+};
 
   const loading = placeLoading || photosLoading || reviewsLoading;
 
@@ -388,7 +408,13 @@ const EstablishmentDetailsPage: FC = () => {
           <div className="review-action-container">
             <button
               className="add-review-button"
-              onClick={() => setShowReviewModal(true)}
+              onClick={() => {
+                if (userReview) {
+                  openEditReview(userReview);
+                } else {
+                  setShowReviewModal(true);
+                }
+              }}
             >
               <MessageSquare size={18} />
               Adicionar avaliação
@@ -412,13 +438,16 @@ const EstablishmentDetailsPage: FC = () => {
                       <div className="review-avatar">
                         <User size={16} />
                       </div>
+
                       <div className="review-meta">
                         <span className="reviewer-name">
                           {review.user.firstName} {review.user.lastName}
                         </span>
+
                         <span className="review-date">
                           {formatReviewDate(review.createdAt)}
                         </span>
+
                         <div className="review-stars">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
@@ -430,6 +459,15 @@ const EstablishmentDetailsPage: FC = () => {
                           ))}
                         </div>
                       </div>
+
+                      {review.user.id === userId && (
+                        <button
+                          className="edit-review-button"
+                          onClick={() => openEditReview(review)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
                     </div>
                     {review.comment && (
                       <p className="review-comment">{review.comment}</p>

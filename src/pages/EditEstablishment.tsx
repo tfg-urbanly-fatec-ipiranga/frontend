@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type FC } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, Trash2, X, Star } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, Trash2, X, Star, Search } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './EditEstablishment.css';
 import { useUpdatePlace } from '../hooks/useUpdatePlace';
@@ -11,6 +11,51 @@ import { usePlaceTags } from "../hooks/usePlaceTags";
 import { toast } from 'react-toastify';
 import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import type { PlacePhoto } from '../types/placePhoto';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default Leaflet markers in React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const MapController = ({ center }: { center: [number, number] }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, map.getZoom());
+  }, [center, map]);
+  return null;
+};
+
+const LocationMarker = ({ position, setPosition }: { position: [number, number], setPosition: (pos: [number, number]) => void }) => {
+  const [localPos, setLocalPos] = useState<[number, number]>(position);
+
+  useEffect(() => {
+    setLocalPos(position);
+  }, [position]);
+
+  const map = useMapEvents({
+    move() {
+      const center = map.getCenter();
+      setLocalPos([center.lat, center.lng]);
+    },
+    moveend() {
+      const center = map.getCenter();
+      setPosition([center.lat, center.lng]);
+    }
+  });
+
+  return localPos === null ? null : (
+    <Marker 
+      position={localPos} 
+      interactive={false}
+    />
+  );
+};
 
 const getPriceLabel = (level?: string) => {
   switch (level) {
@@ -60,6 +105,48 @@ const EditEstablishment: FC = () => {
   const [selectedOpeningTime, setSelectedOpeningTime] = useState('');
   const [selectedClosingTime, setSelectedClosingTime] = useState('');
 
+  const [cep, setCep] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([-23.550520, -46.633308]); // Default SP
+  const [markerPosition, setMarkerPosition] = useState<[number, number]>([-23.550520, -46.633308]);
+
+  const handleCepSearch = async () => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      toast.error('CEP inválido.');
+      return;
+    }
+    
+    setCepLoading(true);
+    try {
+      const response = await fetch(`https://brasilapi.com.br/api/cep/v2/${cleanCep}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        const addrInput = document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement;
+        const cityInput = document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement;
+        if (addrInput) addrInput.value = `${data.street || ''}${data.street && data.neighborhood ? ' - ' : ''}${data.neighborhood || ''}`;
+        if (cityInput) cityInput.value = data.city || '';
+        
+        if (data.location?.coordinates?.latitude && data.location?.coordinates?.longitude) {
+          const lat = parseFloat(data.location.coordinates.latitude);
+          const lng = parseFloat(data.location.coordinates.longitude);
+          setMapCenter([lat, lng]);
+          setMarkerPosition([lat, lng]);
+          toast.success('Endereço e localização encontrados!');
+        } else {
+          toast.info('Endereço encontrado, mas sem coordenadas exatas. Ajuste no mapa.');
+        }
+      } else {
+        toast.error('CEP não encontrado.');
+      }
+    } catch (error) {
+      toast.error('Erro ao buscar CEP.');
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
   useEffect(() => {
   if (place) {
     setSelectedWorkingDays(place.workingDays || '');
@@ -68,6 +155,11 @@ const EditEstablishment: FC = () => {
 
     setSelectedOpeningTime(place.openingTime || '08:00');
     setSelectedClosingTime(place.closingTime || '18:00');
+
+    if (place.latitude && place.longitude) {
+      setMapCenter([place.latitude, place.longitude]);
+      setMarkerPosition([place.latitude, place.longitude]);
+    }
   }
 }, [place]);
 
@@ -182,7 +274,18 @@ const EditEstablishment: FC = () => {
     const name = (document.querySelector('input[placeholder="Insira o nome do estabelecimento"]') as HTMLInputElement)?.value.trim();
     const description = (document.querySelector('textarea') as HTMLTextAreaElement)?.value.trim();
     const city = (document.querySelector('input[placeholder="Insira a cidade"]') as HTMLInputElement)?.value.trim();
-    const address = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
+    const baseAddress = (document.querySelector('input[placeholder="Insira o endereço"]') as HTMLInputElement)?.value.trim();
+    const addressNumber = (document.querySelector('input[placeholder="Ex: 123, S/N"]') as HTMLInputElement)?.value.trim();
+    
+    let address = baseAddress;
+    if (addressNumber) {
+      if (address.includes(' - ')) {
+        const parts = address.split(' - ');
+        address = `${parts[0]}, ${addressNumber} - ${parts.slice(1).join(' - ')}`;
+      } else {
+        address = `${address}, ${addressNumber}`;
+      }
+    }
     const openingTime = selectedOpeningTime;
     const closingTime = selectedClosingTime;
     const categoryId = selectedCategory;
@@ -203,6 +306,8 @@ const EditEstablishment: FC = () => {
       categoryId: categoryId || undefined,
       workingDays,
       priceLevel,
+      latitude: markerPosition[0],
+      longitude: markerPosition[1],
     };
 
     const updated = await updatePlace(id, payload);
@@ -363,6 +468,57 @@ const EditEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
+          <label className="form-label">CEP</label>
+          <div className="input-container" style={{ paddingRight: '4px' }}>
+            <MapPin size={20} className="input-icon" />
+            <input 
+              type="text" 
+              value={cep}
+              onChange={(e) => setCep(e.target.value)}
+              placeholder="00000-000" 
+              className="input-element" 
+            />
+            <button 
+              type="button" 
+              onClick={handleCepSearch} 
+              disabled={cepLoading}
+              style={{
+                background: 'var(--accent)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                minWidth: '90px',
+                justifyContent: 'center'
+              }}
+            >
+              {cepLoading ? '...' : <><Search size={16} /> Buscar</>}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Logradouro / Endereço</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input type="text" defaultValue={place.address} placeholder="Insira o endereço" className="input-element" />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Número</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input type="text" placeholder="Ex: 123, S/N" className="input-element" />
+          </div>
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Cidade</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
@@ -371,10 +527,19 @@ const EditEstablishment: FC = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Endereço</label>
-          <div className="input-container">
-            <MapPin size={20} className="input-icon" />
-            <input type="text" defaultValue={place.address} placeholder="Insira o endereço" className="input-element" />
+          <label className="form-label">Localização no Mapa</label>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 2px', lineHeight: '1.4' }}>
+            Movimente o mapa para ajustar a localização exata do estabelecimento. O marcador central indica a posição selecionada.
+          </p>
+          <div style={{ height: '250px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb', zIndex: 1 }}>
+            <MapContainer center={mapCenter} zoom={15} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              />
+              <MapController center={mapCenter} />
+              <LocationMarker position={markerPosition} setPosition={setMarkerPosition} />
+            </MapContainer>
           </div>
         </div>
 

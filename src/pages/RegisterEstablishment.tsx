@@ -1,13 +1,58 @@
-import React, { useState, type FC, type FormEvent } from 'react';
-import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, X } from 'lucide-react';
+import React, { useState, type FC, type FormEvent, useEffect } from 'react';
+import { ArrowLeft, Building2, MapPin, Coffee, Plus, ArrowRight, ChevronDown, Clock, X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreatePlace } from '../hooks/useCreatePlace';
 import { useCategories } from '../hooks/useCategories';
 import { useTags } from "../hooks/useTags";
 import { usePlaceTags } from "../hooks/usePlaceTags";
 import { usePlacePhotos } from '../hooks/usePlacePhotos';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './RegisterEstablishment.css';
 import { toast } from 'react-toastify';
+
+// Fix for default Leaflet markers in React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const MapController = ({ center }: { center: [number, number] }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, map.getZoom());
+  }, [center, map]);
+  return null;
+};
+
+const LocationMarker = ({ position, setPosition }: { position: [number, number], setPosition: (pos: [number, number]) => void }) => {
+  const [localPos, setLocalPos] = useState<[number, number]>(position);
+
+  useEffect(() => {
+    setLocalPos(position);
+  }, [position]);
+
+  const map = useMapEvents({
+    move() {
+      const center = map.getCenter();
+      setLocalPos([center.lat, center.lng]);
+    },
+    moveend() {
+      const center = map.getCenter();
+      setPosition([center.lat, center.lng]);
+    }
+  });
+
+  return localPos === null ? null : (
+    <Marker 
+      position={localPos} 
+      interactive={false}
+    />
+  );
+};
 
 
 const getPriceLabel = (level?: string) => {
@@ -38,7 +83,11 @@ const RegisterEstablishment: FC = () => {
   const [workingDaysOpen, setWorkingDaysOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [priceOpen, setPriceOpen] = useState(false);
-
+  
+  const [cep, setCep] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([-23.550520, -46.633308]); // Default SP
+  const [markerPosition, setMarkerPosition] = useState<[number, number]>([-23.550520, -46.633308]);
 
 const [openingOpen, setOpeningOpen] = useState(false);
 const [closingOpen, setClosingOpen] = useState(false);
@@ -56,11 +105,11 @@ for (let hour = 0; hour < 24; hour++) {
   }
 }
   
-  // Basic Form State
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     address: '',
+    addressNumber: '',
     city: '',
     openingTime: '',
     closingTime: '',
@@ -101,6 +150,44 @@ for (let hour = 0; hour < 24; hour++) {
     );
   }
 
+  const handleCepSearch = async () => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      toast.error('CEP inválido.');
+      return;
+    }
+    
+    setCepLoading(true);
+    try {
+      const response = await fetch(`https://brasilapi.com.br/api/cep/v2/${cleanCep}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setFormData(prev => ({
+          ...prev,
+          address: `${data.street || ''}${data.street && data.neighborhood ? ' - ' : ''}${data.neighborhood || ''}`,
+          city: data.city || '',
+        }));
+        
+        if (data.location?.coordinates?.latitude && data.location?.coordinates?.longitude) {
+          const lat = parseFloat(data.location.coordinates.latitude);
+          const lng = parseFloat(data.location.coordinates.longitude);
+          setMapCenter([lat, lng]);
+          setMarkerPosition([lat, lng]);
+          toast.success('Endereço e localização encontrados!');
+        } else {
+          toast.info('Endereço encontrado, mas sem coordenadas exatas. Ajuste no mapa.');
+        }
+      } else {
+        toast.error('CEP não encontrado.');
+      }
+    } catch (error) {
+      toast.error('Erro ao buscar CEP.');
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -113,13 +200,25 @@ for (let hour = 0; hour < 24; hour++) {
       return toast.warn('Nenhuma foto adicionada! Adicione pelo menos uma foto!');
     }
 
+    let finalAddress = formData.address;
+    if (formData.addressNumber) {
+      if (finalAddress.includes(' - ')) {
+        const parts = finalAddress.split(' - ');
+        finalAddress = `${parts[0]}, ${formData.addressNumber} - ${parts.slice(1).join(' - ')}`;
+      } else {
+        finalAddress = `${finalAddress}, ${formData.addressNumber}`;
+      }
+    }
+
     // Format data for the backend DTO
     const payload: any = {
       ...formData,
-      // Provide dummy coordinates since map selection isn't implemented yet
-      latitude: -23.5505,
-      longitude: -46.6333,
+      address: finalAddress,
+      latitude: markerPosition[0],
+      longitude: markerPosition[1],
     };
+    
+    delete payload.addressNumber;
 
     if (!payload.categoryId || payload.categoryId === '') {
       delete payload.categoryId; // Protect the backend expecting either valid UUID or omitted
@@ -191,7 +290,43 @@ for (let hour = 0; hour < 24; hour++) {
         </div>
 
         <div className="form-group">
-          <label className="form-label-estab">Endereço</label>
+          <label className="form-label-estab">CEP</label>
+          <div className="input-container" style={{ paddingRight: '4px' }}>
+            <MapPin size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="cep"
+              value={cep}
+              onChange={(e) => setCep(e.target.value)}
+              placeholder="00000-000" 
+              className="input-element" 
+            />
+            <button 
+              type="button" 
+              onClick={handleCepSearch} 
+              disabled={cepLoading}
+              style={{
+                background: 'var(--accent)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                minWidth: '90px',
+                justifyContent: 'center'
+              }}
+            >
+              {cepLoading ? '...' : <><Search size={16} /> Buscar</>}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label-estab">Logradouro / Endereço</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
             <input 
@@ -201,6 +336,22 @@ for (let hour = 0; hour < 24; hour++) {
               onChange={handleInputChange}
               required
               placeholder="Insira o endereço" 
+              className="input-element" 
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label-estab">Número</label>
+          <div className="input-container">
+            <MapPin size={20} className="input-icon" />
+            <input 
+              type="text" 
+              name="addressNumber"
+              value={formData.addressNumber}
+              onChange={handleInputChange}
+              required
+              placeholder="Ex: 123, S/N" 
               className="input-element" 
             />
           </div>
@@ -219,6 +370,23 @@ for (let hour = 0; hour < 24; hour++) {
               placeholder="Insira a cidade" 
               className="input-element" 
             />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label-estab">Localização no Mapa</label>
+          <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 2px', lineHeight: '1.4' }}>
+            Movimente o mapa para ajustar a localização exata do estabelecimento. O marcador central indica a posição selecionada.
+          </p>
+          <div style={{ height: '250px', width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb', zIndex: 1 }}>
+            <MapContainer center={mapCenter} zoom={15} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              />
+              <MapController center={mapCenter} />
+              <LocationMarker position={markerPosition} setPosition={setMarkerPosition} />
+            </MapContainer>
           </div>
         </div>
 

@@ -618,33 +618,24 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 20px;
-
+  padding: 0;
   background: rgba(0, 0, 0, 0.5);
-
-  z-index: 9999;
+  z-index: 99999;
 }
 
 .modal-content {
-  width: 100%;
-  max-width: 400px;
-
+  position: relative;
+  width: 90%;
+  max-width: 420px;
   padding: 24px;
-
   background: white;
-
   border-radius: 20px;
-
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-
   box-sizing: border-box;
 }
-
 .modal-content h3 {
   margin: 0 0 10px;
 
@@ -773,5 +764,9 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 

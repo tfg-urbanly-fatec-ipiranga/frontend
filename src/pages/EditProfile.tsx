@@ -437,7 +437,7 @@ const EditProfilePage: FC = () => {
           </div>
 
         {showDeleteModal && (
-          <div className="modal-delete-overlay">
+          <div className="modal-overlay">
             <div className="modal-delete-content">
               <h3>Desativar usuário</h3>
 

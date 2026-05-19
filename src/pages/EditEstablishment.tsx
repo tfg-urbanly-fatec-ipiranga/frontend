@@ -440,6 +440,32 @@ const EditEstablishment: FC = () => {
   '23:00',
 ];
 
+  const parseAddress = (fullAddress?: string) => {
+    if (!fullAddress) return { baseAddress: '', number: '' };
+    const commaIndex = fullAddress.indexOf(',');
+    if (commaIndex === -1) return { baseAddress: fullAddress, number: '' };
+    
+    const beforeComma = fullAddress.substring(0, commaIndex);
+    const afterComma = fullAddress.substring(commaIndex + 1);
+    
+    const dashIndex = afterComma.indexOf('-');
+    if (dashIndex === -1) {
+      return {
+        baseAddress: beforeComma.trim(),
+        number: afterComma.trim()
+      };
+    } else {
+      const numberPart = afterComma.substring(0, dashIndex);
+      const afterDash = afterComma.substring(dashIndex + 1);
+      return {
+        baseAddress: `${beforeComma.trim()} - ${afterDash.trim()}`,
+        number: numberPart.trim()
+      };
+    }
+  };
+
+  const parsedAddress = parseAddress(place?.address);
+
   return (
     <div className="edit-establishment-page">
       <header className="establishment-header">
@@ -506,7 +532,7 @@ const EditEstablishment: FC = () => {
           <label className="form-label">Logradouro / Endereço</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
-            <input type="text" defaultValue={place.address} placeholder="Insira o endereço" className="input-element" />
+            <input type="text" defaultValue={parsedAddress.baseAddress} placeholder="Insira o endereço" className="input-element" />
           </div>
         </div>
 
@@ -514,7 +540,7 @@ const EditEstablishment: FC = () => {
           <label className="form-label">Número</label>
           <div className="input-container">
             <MapPin size={20} className="input-icon" />
-            <input type="text" placeholder="Ex: 123, S/N" className="input-element" />
+            <input type="text" defaultValue={parsedAddress.number} placeholder="Ex: 123, S/N" className="input-element" />
           </div>
         </div>
 

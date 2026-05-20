@@ -3,6 +3,8 @@ import { ToastContainer } from 'react-toastify';
 import RegisterPage from './pages/Register';
 import RegisterEstablishmentPage from './pages/RegisterEstablishment';
 import LoginPage from './pages/Login';
+import ForgotPasswordPage from './pages/ForgotPassword';
+import ResetPasswordPage from './pages/ResetPassword';
 import EditProfilePage from './pages/EditProfile';
 import EditEstablishmentPage from './pages/EditEstablishment';
 import HomePage from './pages/Home';
@@ -45,6 +47,8 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/register-establishment" element={<RegisterEstablishmentPage />} />
             <Route path="/edit-profile" element={<EditProfilePage />} />

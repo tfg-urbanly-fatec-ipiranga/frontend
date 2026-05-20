@@ -86,5 +86,39 @@ export const useAuth = () => {
     }
   };
 
-  return { registerUser, loginUser, updateUser, changePassword, loading, error };
+  const forgotPassword = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post('/auth/forgot-password', { email });
+      return response.data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao solicitar recuperação de senha';
+      setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      console.error('Error in forgotPassword:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post('/auth/reset-password', { token, newPassword });
+      return response.data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao redefinir a senha';
+      setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      console.error('Error in resetPassword:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { registerUser, loginUser, updateUser, changePassword, forgotPassword, resetPassword, loading, error };
 };
+
+

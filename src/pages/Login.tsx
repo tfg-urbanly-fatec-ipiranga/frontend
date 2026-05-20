@@ -84,7 +84,7 @@ const LoginPage: FC = () => {
             </div>
           </div>
 
-          <a href="#" className="forgot-password">Esqueceu sua senha?</a>
+          <Link to="/forgot-password" className="forgot-password">Esqueceu sua senha?</Link>
           {error && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>Erro: {error}</div>}
 
           <button type="submit" className="login-button" disabled={loading}>

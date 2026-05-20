@@ -31,7 +31,7 @@ const EstablishmentDetailsPage: FC = () => {
   const { place, loading: placeLoading, error } = usePlaceDetails(id);
   const { isFavorite, isToggling, toggleFavorite } = useFavorites();
   const { photos, loading: photosLoading } = usePlacePhotos(id);
-  const [activeSlide, setActiveSlide] = React.useState(0);
+  const [_activeSlide, setActiveSlide] = React.useState(0);
   const carouselRef = React.useRef<HTMLDivElement | null>(null);
   const { reviews, averageRating, loading: reviewsLoading } = usePlaceReviews(id);
 

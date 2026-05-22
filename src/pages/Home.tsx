@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, type FC } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
 import { Search, SlidersHorizontal, User, Menu, X, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useUserLocation  } from "../context/LocationContext";
+import { useUserLocation } from "../context/LocationContext";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useAuthContext } from "../context/AuthContext";
@@ -14,16 +14,16 @@ import BottomNav from '../components/BottomNav';
 // Handler for Map Bounds
 const MapBoundsHandler: FC<{ onBoundsChange: (bounds: L.LatLngBounds) => void }> = ({ onBoundsChange }) => {
   const map = useMap();
-  
+
   useEffect(() => {
     // Initial bounds
     onBoundsChange(map.getBounds());
-    
+
     // Update on move/zoom
     const handleMoveEnd = () => {
       onBoundsChange(map.getBounds());
     };
-    
+
     map.on('moveend', handleMoveEnd);
     return () => {
       map.off('moveend', handleMoveEnd);
@@ -162,13 +162,13 @@ const PlacePopup: FC<PlacePopupProps> = ({ place }) => {
         )}
         {d.address && (
           <p className="map-popup__address">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
             {d.address}{d.city ? `, ${d.city}` : ''}
           </p>
         )}
         {avgRating !== null && (
           <div className="map-popup__rating">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="#FBBF24" stroke="#FBBF24" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#FBBF24" stroke="#FBBF24" strokeWidth="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
             <span>{avgRating.toFixed(1)}</span>
           </div>
         )}
@@ -203,7 +203,7 @@ const HomePage: FC = () => {
     { label: '3+', value: '3-4' },
     { label: '4+', value: '4-5' },
   ];
-  
+
   // Mantenha os estabelecimentos em um cache (buscados via hook usePlaces)
   const { places: allPlaces } = usePlaces();
 
@@ -212,7 +212,7 @@ const HomePage: FC = () => {
 
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
 
-  const { logout, isAuthenticated  } = useAuthContext();
+  const { logout, isAuthenticated } = useAuthContext();
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser).user || JSON.parse(storedUser) : null;
 
@@ -248,8 +248,8 @@ const HomePage: FC = () => {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await api.get<Place[]>('/places/search', {
-          params: { searchTerm: searchTerm.trim() },
+        const res = await api.get<Place[]>('/places/vibe-search', {
+          params: { q: searchTerm.trim() },
         });
         setSearchPlaces(res.data);
       } catch {
@@ -329,103 +329,103 @@ const HomePage: FC = () => {
     );
   }, [filterBasePlaces]);
 
-type TagStyle = {
-  bg: string;
-  border: string;
-  color: string;
-};
+  type TagStyle = {
+    bg: string;
+    border: string;
+    color: string;
+  };
 
-const tagColors: Record<string, TagStyle> = {
-  vegano: {
-    bg: '#ECFDF5',
-    border: '#10B981',
-    color: '#064E3B'
-  },
+  const tagColors: Record<string, TagStyle> = {
+    vegano: {
+      bg: '#ECFDF5',
+      border: '#10B981',
+      color: '#064E3B'
+    },
 
-  saudável: {
-    bg: '#F0FDF4',
-    border: '#22C55E',
-    color: '#14532D'
-  },
+    saudável: {
+      bg: '#F0FDF4',
+      border: '#22C55E',
+      color: '#14532D'
+    },
 
-  'pet-friendly': {
-    bg: '#FFFBEB',
-    border: '#F59E0B',
-    color: '#78350F'
-  },
+    'pet-friendly': {
+      bg: '#FFFBEB',
+      border: '#F59E0B',
+      color: '#78350F'
+    },
 
-  wifi: {
-    bg: '#EFF6FF',
-    border: '#3B82F6',
-    color: '#1E3A8A'
-  },
+    wifi: {
+      bg: '#EFF6FF',
+      border: '#3B82F6',
+      color: '#1E3A8A'
+    },
 
-  acessível: {
-    bg: '#F0F9FF',
-    border: '#0EA5E9',
-    color: '#0C4A6E'
-  },
+    acessível: {
+      bg: '#F0F9FF',
+      border: '#0EA5E9',
+      color: '#0C4A6E'
+    },
 
-  delivery: {
-    bg: '#FFF1F2',
-    border: '#E11D48',
-    color: '#881337'
-  },
+    delivery: {
+      bg: '#FFF1F2',
+      border: '#E11D48',
+      color: '#881337'
+    },
 
-  brunch: {
-    bg: '#FFFBEB',
-    border: '#FBBF24',
-    color: '#713F12'
-  },
+    brunch: {
+      bg: '#FFFBEB',
+      border: '#FBBF24',
+      color: '#713F12'
+    },
 
-  artesanal: {
-    bg: '#FFF7ED',
-    border: '#F97316',
-    color: '#7C2D12'
-  },
+    artesanal: {
+      bg: '#FFF7ED',
+      border: '#F97316',
+      color: '#7C2D12'
+    },
 
-  aconchegante: {
-    bg: '#FDF2F8',
-    border: '#EC4899',
-    color: '#831843'
-  },
+    aconchegante: {
+      bg: '#FDF2F8',
+      border: '#EC4899',
+      color: '#831843'
+    },
 
-  romântico: {
-    bg: '#FCE7F3',
-    border: '#DB2777',
-    color: '#831843'
-  },
+    romântico: {
+      bg: '#FCE7F3',
+      border: '#DB2777',
+      color: '#831843'
+    },
 
-  'música ao vivo': {
-    bg: '#F5F3FF',
-    border: '#7C3AED',
-    color: '#3B0764'
-  },
+    'música ao vivo': {
+      bg: '#F5F3FF',
+      border: '#7C3AED',
+      color: '#3B0764'
+    },
 
-  rooftop: {
-    bg: '#EEF2FF',
-    border: '#4F46E5',
-    color: '#1E1B4B'
-  },
+    rooftop: {
+      bg: '#EEF2FF',
+      border: '#4F46E5',
+      color: '#1E1B4B'
+    },
 
-  'ao ar livre': {
-    bg: '#F7FEE7',
-    border: '#84CC16',
-    color: '#365314'
-  },
+    'ao ar livre': {
+      bg: '#F7FEE7',
+      border: '#84CC16',
+      color: '#365314'
+    },
 
-  família: {
-    bg: '#FFFBEB',
-    border: '#F59E0B',
-    color: '#78350F'
-  },
+    família: {
+      bg: '#FFFBEB',
+      border: '#F59E0B',
+      color: '#78350F'
+    },
 
-  estacionamento: {
-    bg: '#F3F4F6',
-    border: '#6B7280',
-    color: '#111827'
-  }
-};
+    estacionamento: {
+      bg: '#F3F4F6',
+      border: '#6B7280',
+      color: '#111827'
+    }
+  };
 
   const availableRatings = useMemo(() => {
     if (!filterBasePlaces.length) return [];
@@ -473,8 +473,8 @@ const tagColors: Record<string, TagStyle> = {
     const a =
       Math.sin(dLat / 2) ** 2 +
       Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -616,9 +616,9 @@ const tagColors: Record<string, TagStyle> = {
     }
   };
 
-  const defaultPosition: [number, number] = location?
-  [location.latitude, location.longitude]
-  : [-23.5505, -46.6333];
+  const defaultPosition: [number, number] = location ?
+    [location.latitude, location.longitude]
+    : [-23.5505, -46.6333];
 
   return (
     <div className="home-page">
@@ -636,7 +636,7 @@ const tagColors: Record<string, TagStyle> = {
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
           <MapBoundsHandler onBoundsChange={setMapBounds} />
-          
+
           {displayedPlaces
             .filter(place => place.latitude != null && place.longitude != null)
             .slice(0, 20)
@@ -648,57 +648,57 @@ const tagColors: Record<string, TagStyle> = {
               </Marker>
             ))}
 
-            {location && (
-              <Marker
-                position={[location.latitude, location.longitude]}
-                icon={userIcon}
-              >
-                <Popup>
-                  Você está aqui
-                </Popup>
-              </Marker>
-            )}
+          {location && (
+            <Marker
+              position={[location.latitude, location.longitude]}
+              icon={userIcon}
+            >
+              <Popup>
+                Você está aqui
+              </Popup>
+            </Marker>
+          )}
           <ZoomControl position="bottomright" />
         </MapContainer>
       </div>
 
       {/* UI Overlays */}
       <div className="home-overlay">
-      <header className="home-header">
-        <div className="brand-text" onClick={()=> setShowEasterEggModal(true)} >Urbanly</div>
-        <div className="header-right">
-          {isAuthenticated && (
-            <div className="profile-pic">
-              {parsedUser?.avatar ? (
-                <img
-                  src={parsedUser.avatar}
-                  alt="Profile"
-                  style={{ width: "100%", borderRadius: "50%" }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    backgroundColor: "#EB6B3D",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {getInitials(parsedUser?.firstName, parsedUser?.lastName)}
-                </div>
-              )}
-            </div>
-          )}
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </header>
+        <header className="home-header">
+          <div className="brand-text" onClick={() => setShowEasterEggModal(true)} >Urbanly</div>
+          <div className="header-right">
+            {isAuthenticated && (
+              <div className="profile-pic">
+                {parsedUser?.avatar ? (
+                  <img
+                    src={parsedUser.avatar}
+                    alt="Profile"
+                    style={{ width: "100%", borderRadius: "50%" }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      backgroundColor: "#EB6B3D",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    {getInitials(parsedUser?.firstName, parsedUser?.lastName)}
+                  </div>
+                )}
+              </div>
+            )}
+            <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </header>
 
         <section className="search-filter-area">
           <div className="search-bar-container">
@@ -735,146 +735,146 @@ const tagColors: Record<string, TagStyle> = {
                 <button className="filter-panel-close" onClick={() => setFilterOpen(false)}>✕</button>
               </div>
 
-          {availableCities.length > 0 && (
-            <div className="filter-section">
-              <div className="filter-section-title">Cidade</div>
-              <div className="filter-options">
-                {availableCities.map(city => (
-                  <label key={city} className="filter-option">
-                    <input
-                      type="checkbox"
-                      checked={selectedCities.includes(city)}
-                      onChange={() =>
-                        setSelectedCities(prev =>
-                          prev.includes(city)
-                            ? prev.filter(c => c !== city)
-                            : [...prev, city]
-                        )
-                      }
-                    />
-                    <span>{city}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {availableCategories.length > 0 && (
-            <div className="filter-section">
-              <div className="filter-section-title">Categoria</div>
-              <div className="filter-options">
-                {availableCategories.map(category => (
-                  <label key={category} className="filter-option">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category)}
-                      onChange={() =>
-                        setSelectedCategories(prev =>
-                          prev.includes(category)
-                            ? prev.filter(c => c !== category)
-                            : [...prev, category]
-                        )
-                      }
-                    />
-                    <span>{category}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {availableRatings.length > 0 && (
-            <div className="filter-section">
-              <div className="filter-section-title">Avaliação</div>
-
-              <div className="filter-options">
-                {availableRatings.map(option => (
-                  <label key={option.value} className="filter-option">
-                    <input
-                      type="checkbox"
-                      checked={selectedRatings.includes(option.value)}
-                      onChange={() =>
-                        setSelectedRatings(prev =>
-                          prev.includes(option.value)
-                            ? prev.filter(v => v !== option.value)
-                            : [...prev, option.value]
-                        )
-                      }
-                    />
-
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ color: '#FBBF24' }}>★</span>
-                      <span>{option.label}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {availablePrices.length > 0 && (
-            <div className="filter-section">
-              <div className="filter-section-title">Preço médio</div>
-
-              <div className="filter-options">
-                {availablePrices.map(option => (
-                  <label key={option.value} className="filter-option">
-                    <input
-                      type="checkbox"
-                      checked={selectedPrices.includes(option.value)}
-                      onChange={() =>
-                        setSelectedPrices(prev =>
-                          prev.includes(option.value)
-                            ? prev.filter(v => v !== option.value)
-                            : [...prev, option.value]
-                        )
-                      }
-                    />
-
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        letterSpacing: '0.5px',
-                        color: '#15803D'
-                      }}
-                    >
-                      {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {location && (
-            <div className="filter-section">
-              <div className="filter-section-title">
-                Distância máxima
-              </div>
-
-              <div className="distance-slider-wrapper">
-                <input
-                  type="range"
-                  min={1}
-                  max={50}
-                  step={1}
-                  value={maxDistance}
-                  onChange={(e) => setMaxDistance(Number(e.target.value))}
-                  className="distance-slider"
-                />
-
-                <div className="distance-slider-value">
-                  Até {maxDistance} KM
+              {availableCities.length > 0 && (
+                <div className="filter-section">
+                  <div className="filter-section-title">Cidade</div>
+                  <div className="filter-options">
+                    {availableCities.map(city => (
+                      <label key={city} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedCities.includes(city)}
+                          onChange={() =>
+                            setSelectedCities(prev =>
+                              prev.includes(city)
+                                ? prev.filter(c => c !== city)
+                                : [...prev, city]
+                            )
+                          }
+                        />
+                        <span>{city}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {availableCities.length === 0 && availableCategories.length === 0 && availableRatings.length === 0 && availablePrices.length === 0&& (
-            <p className="filter-empty">
-              Nenhum filtro disponível para esses resultados.
-            </p>
-          )}
+              {availableCategories.length > 0 && (
+                <div className="filter-section">
+                  <div className="filter-section-title">Categoria</div>
+                  <div className="filter-options">
+                    {availableCategories.map(category => (
+                      <label key={category} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(category)}
+                          onChange={() =>
+                            setSelectedCategories(prev =>
+                              prev.includes(category)
+                                ? prev.filter(c => c !== category)
+                                : [...prev, category]
+                            )
+                          }
+                        />
+                        <span>{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {availableRatings.length > 0 && (
+                <div className="filter-section">
+                  <div className="filter-section-title">Avaliação</div>
+
+                  <div className="filter-options">
+                    {availableRatings.map(option => (
+                      <label key={option.value} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedRatings.includes(option.value)}
+                          onChange={() =>
+                            setSelectedRatings(prev =>
+                              prev.includes(option.value)
+                                ? prev.filter(v => v !== option.value)
+                                : [...prev, option.value]
+                            )
+                          }
+                        />
+
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ color: '#FBBF24' }}>★</span>
+                          <span>{option.label}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {availablePrices.length > 0 && (
+                <div className="filter-section">
+                  <div className="filter-section-title">Preço médio</div>
+
+                  <div className="filter-options">
+                    {availablePrices.map(option => (
+                      <label key={option.value} className="filter-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedPrices.includes(option.value)}
+                          onChange={() =>
+                            setSelectedPrices(prev =>
+                              prev.includes(option.value)
+                                ? prev.filter(v => v !== option.value)
+                                : [...prev, option.value]
+                            )
+                          }
+                        />
+
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            letterSpacing: '0.5px',
+                            color: '#15803D'
+                          }}
+                        >
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {location && (
+                <div className="filter-section">
+                  <div className="filter-section-title">
+                    Distância máxima
+                  </div>
+
+                  <div className="distance-slider-wrapper">
+                    <input
+                      type="range"
+                      min={1}
+                      max={50}
+                      step={1}
+                      value={maxDistance}
+                      onChange={(e) => setMaxDistance(Number(e.target.value))}
+                      className="distance-slider"
+                    />
+
+                    <div className="distance-slider-value">
+                      Até {maxDistance} KM
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {availableCities.length === 0 && availableCategories.length === 0 && availableRatings.length === 0 && availablePrices.length === 0 && (
+                <p className="filter-empty">
+                  Nenhum filtro disponível para esses resultados.
+                </p>
+              )}
 
               <div className="filter-actions">
                 <button
@@ -884,7 +884,7 @@ const tagColors: Record<string, TagStyle> = {
                     setSelectedCategories([]);
                     setSelectedRatings([]);
                     setSelectedPrices([]);
-                  }}             
+                  }}
                 >
                   Limpar
                 </button>
@@ -925,9 +925,9 @@ const tagColors: Record<string, TagStyle> = {
                     style={
                       !activeChips.includes(tag.name)
                         ? {
-                            backgroundColor: colors.bg,
-                            color: colors.color
-                          }
+                          backgroundColor: colors.bg,
+                          color: colors.color
+                        }
                         : {}
                     }
                   >
@@ -940,20 +940,20 @@ const tagColors: Record<string, TagStyle> = {
         </section>
 
         {/* Botão flutuante de resultados - fixo acima da navbar */}
-          {displayedPlaces.length > 0 && (searchTerm.trim() || activeChips.length > 0) && (
-            <div className="view-results-wrapper">
-              <button
-                className="view-results-btn"
-                onClick={() => navigate('/establishments', { state: { places: displayedPlaces } })}
-              >
-                <span className="view-results-btn__icon">▤</span>
-                Ver {displayedPlaces.length} resultado{displayedPlaces.length !== 1 ? 's' : ''} na lista
-                {activeChips.length > 0 && !searchTerm.trim() && (
-                  <span className="view-results-btn__badge">{activeChips.length} filtro{activeChips.length !== 1 ? 's' : ''}</span>
-                )}
-              </button>
-            </div>
-          )}
+        {displayedPlaces.length > 0 && (searchTerm.trim() || activeChips.length > 0) && (
+          <div className="view-results-wrapper">
+            <button
+              className="view-results-btn"
+              onClick={() => navigate('/establishments', { state: { places: displayedPlaces } })}
+            >
+              <span className="view-results-btn__icon">▤</span>
+              Ver {displayedPlaces.length} resultado{displayedPlaces.length !== 1 ? 's' : ''} na lista
+              {activeChips.length > 0 && !searchTerm.trim() && (
+                <span className="view-results-btn__badge">{activeChips.length} filtro{activeChips.length !== 1 ? 's' : ''}</span>
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="bottom-content">
           {/* Bottom Nav */}
@@ -1005,7 +1005,7 @@ const tagColors: Record<string, TagStyle> = {
             <h2 className="easter-title">Urbanly</h2>
 
             <p className="easter-text">
-              Trabalho de conclusão de curso desenvolvido pelos alunos Alisson Curvina, Evilly Nascimento, Natalia Taira e Leonardo Alves pela FATEC Ipiranga              
+              Trabalho de conclusão de curso desenvolvido pelos alunos Alisson Curvina, Evilly Nascimento, Natalia Taira e Leonardo Alves pela FATEC Ipiranga
             </p>
 
             <p className="easter-text">

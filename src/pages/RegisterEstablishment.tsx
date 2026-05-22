@@ -200,6 +200,10 @@ for (let hour = 0; hour < 24; hour++) {
       return toast.warn('Nenhuma foto adicionada! Adicione pelo menos uma foto!');
     }
 
+    if (activeTags.length === 0) {
+      return toast.warn('Selecione pelo menos uma tag!');
+    }
+
     let finalAddress = formData.address;
     if (formData.addressNumber) {
       if (finalAddress.includes(' - ')) {

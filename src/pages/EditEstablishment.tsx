@@ -150,7 +150,7 @@ const EditEstablishment: FC = () => {
   useEffect(() => {
   if (place) {
     setSelectedWorkingDays(place.workingDays || '');
-    setSelectedCategory(place.categoryId || '');
+    setSelectedCategory(place.category?.id || '');
     setSelectedPrice(place.priceLevel || '');
 
     setSelectedOpeningTime(place.openingTime || '08:00');
@@ -292,7 +292,12 @@ const EditEstablishment: FC = () => {
 
     // Validação
     if (!name || !description || !city || !address || !openingTime || !closingTime) {
-      setErrorMessage("Preencha todos os campos obrigatórios.");
+      toast.error("Preencha todos os campos obrigatórios.");
+      return setIsSaving(false);
+    }
+
+    if (activeTags.length === 0) {
+      toast.error('Selecione pelo menos uma tag!');
       return setIsSaving(false);
     }
 
@@ -675,7 +680,7 @@ const EditEstablishment: FC = () => {
           </div>
         </div>
 
-</div>
+        </div>
         <div className="form-group">
           <label className="form-label">
             Dias de Funcionamento

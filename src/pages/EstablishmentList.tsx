@@ -116,102 +116,102 @@ const EstablishmentListPage: FC = () => {
   };
 
   type TagStyle = {
-  bg: string;
-  border: string;
-  color: string;
-};
+    bg: string;
+    border: string;
+    color: string;
+  };
 
   const tagColors: Record<string, TagStyle> = {
-  vegano: {
-    bg: '#ECFDF5',
-    border: '#10B981',
-    color: '#064E3B'
-  },
+    vegano: {
+      bg: '#ECFDF5',
+      border: '#10B981',
+      color: '#064E3B'
+    },
 
-  saudável: {
-    bg: '#F0FDF4',
-    border: '#22C55E',
-    color: '#14532D'
-  },
+    saudável: {
+      bg: '#F0FDF4',
+      border: '#22C55E',
+      color: '#14532D'
+    },
 
-  'pet-friendly': {
-    bg: '#FFFBEB',
-    border: '#F59E0B',
-    color: '#78350F'
-  },
+    'pet-friendly': {
+      bg: '#FFFBEB',
+      border: '#F59E0B',
+      color: '#78350F'
+    },
 
-  wifi: {
-    bg: '#EFF6FF',
-    border: '#3B82F6',
-    color: '#1E3A8A'
-  },
+    wifi: {
+      bg: '#EFF6FF',
+      border: '#3B82F6',
+      color: '#1E3A8A'
+    },
 
-  acessível: {
-    bg: '#F0F9FF',
-    border: '#0EA5E9',
-    color: '#0C4A6E'
-  },
+    acessível: {
+      bg: '#F0F9FF',
+      border: '#0EA5E9',
+      color: '#0C4A6E'
+    },
 
-  delivery: {
-    bg: '#FFF1F2',
-    border: '#E11D48',
-    color: '#881337'
-  },
+    delivery: {
+      bg: '#FFF1F2',
+      border: '#E11D48',
+      color: '#881337'
+    },
 
-  brunch: {
-    bg: '#FFFBEB',
-    border: '#FBBF24',
-    color: '#713F12'
-  },
+    brunch: {
+      bg: '#FFFBEB',
+      border: '#FBBF24',
+      color: '#713F12'
+    },
 
-  artesanal: {
-    bg: '#FFF7ED',
-    border: '#F97316',
-    color: '#7C2D12'
-  },
+    artesanal: {
+      bg: '#FFF7ED',
+      border: '#F97316',
+      color: '#7C2D12'
+    },
 
-  aconchegante: {
-    bg: '#FDF2F8',
-    border: '#EC4899',
-    color: '#831843'
-  },
+    aconchegante: {
+      bg: '#FDF2F8',
+      border: '#EC4899',
+      color: '#831843'
+    },
 
-  romântico: {
-    bg: '#FCE7F3',
-    border: '#DB2777',
-    color: '#831843'
-  },
+    romântico: {
+      bg: '#FCE7F3',
+      border: '#DB2777',
+      color: '#831843'
+    },
 
-  'música ao vivo': {
-    bg: '#F5F3FF',
-    border: '#7C3AED',
-    color: '#3B0764'
-  },
+    'música ao vivo': {
+      bg: '#F5F3FF',
+      border: '#7C3AED',
+      color: '#3B0764'
+    },
 
-  rooftop: {
-    bg: '#EEF2FF',
-    border: '#4F46E5',
-    color: '#1E1B4B'
-  },
+    rooftop: {
+      bg: '#EEF2FF',
+      border: '#4F46E5',
+      color: '#1E1B4B'
+    },
 
-  'ao ar livre': {
-    bg: '#F7FEE7',
-    border: '#84CC16',
-    color: '#365314'
-  },
+    'ao ar livre': {
+      bg: '#F7FEE7',
+      border: '#84CC16',
+      color: '#365314'
+    },
 
-  família: {
-    bg: '#FFFBEB',
-    border: '#F59E0B',
-    color: '#78350F'
-  },
+    família: {
+      bg: '#FFFBEB',
+      border: '#F59E0B',
+      color: '#78350F'
+    },
 
-  estacionamento: {
-    bg: '#F3F4F6',
-    border: '#6B7280',
-    color: '#111827'
-  }
-};
+    estacionamento: {
+      bg: '#F3F4F6',
+      border: '#6B7280',
+      color: '#111827'
+    }
+  };
   const handleFavorites = (
     e: React.MouseEvent<HTMLButtonElement>,
     placeId: string

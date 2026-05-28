@@ -181,6 +181,8 @@ const PlacePopup: FC<PlacePopupProps> = ({ place }) => {
 
 const HomePage: FC = () => {
   const navigate = useNavigate();
+  const [serverOffline, setServerOffline] = useState(false);
+  const [checkingServer, setCheckingServer] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeChips, setActiveChips] = useState<string[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -622,6 +624,69 @@ const HomePage: FC = () => {
   const defaultPosition: [number, number] = location ?
     [location.latitude, location.longitude]
     : [-23.5505, -46.6333];
+
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        await api.get('/');
+
+        setServerOffline(false);
+      } catch (err) {
+        setServerOffline(true);
+      } finally {
+        setCheckingServer(false);
+      }
+    };
+
+    checkServer();
+  }, []);
+
+  if (checkingServer) {
+  return (
+      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        
+        {/* Botão de voltar no topo */}
+        <header className="details-force-login-header">
+          <span className="brand-text-force-login">Urbanly</span>
+        </header>
+
+        <main>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '24px', textAlign: 'center' }}>
+              <>
+                <p style={{ fontSize: '16px', color: '#374151' }}>Carregando...</p>
+              </>
+          </div>
+        </main>
+      </div>
+  );
+}
+
+  if (serverOffline) {
+    return (
+      <div className="establishment-details-page" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        
+        {/* Botão de voltar no topo */}
+        <header className="details-force-login-header">
+          <span className="brand-text-force-login">Urbanly</span>
+        </header>
+
+        <main>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '24px', textAlign: 'center' }}>
+              <>
+                <p style={{ fontSize: '16px', color: '#374151' }}>Estamos com problemas de conexão servidor e já estamos trabalhando para reestabeler-la.</p>
+                <button
+                  className="action-button"
+                  onClick={() => window.location.reload()}
+                  style={{ marginTop: '8px', backgroundColor: '#EB6B3D', color: '#fff', border: 'none', padding: '14px 64px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, cursor: 'pointer', width: '80%', maxWidth: '320px' }}
+                >
+                  Tentar novamente
+                </button>
+              </>
+          </div>
+        </main>
+      </div>
+    );
+  }  
 
   return (
     <div className="home-page">

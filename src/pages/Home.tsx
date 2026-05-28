@@ -10,6 +10,7 @@ import { usePlaces } from '../hooks/usePlaces';
 import './Home.css';
 import api from '../services/api';
 import BottomNav from '../components/BottomNav';
+import { toast } from 'react-toastify';
 
 // Handler for Map Bounds
 const MapBoundsHandler: FC<{ onBoundsChange: (bounds: L.LatLngBounds) => void }> = ({ onBoundsChange }) => {
@@ -208,7 +209,7 @@ const HomePage: FC = () => {
   const { places: allPlaces } = usePlaces();
 
   const { location } = useUserLocation();
-  const [maxDistance, setMaxDistance] = useState(10);
+  const [maxDistance, setMaxDistance] = useState(25);
 
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
 
@@ -252,7 +253,9 @@ const HomePage: FC = () => {
           params: { q: searchTerm.trim() },
         });
         setSearchPlaces(res.data);
+        if (!setSearchPlaces) return toast.warn("Nenhum local atende a busca solicitada!")
       } catch {
+        toast.error("Erro ao fazer busca!");
         setSearchPlaces([]);
       } finally {
         setIsSearching(false);
@@ -639,7 +642,7 @@ const HomePage: FC = () => {
 
           {displayedPlaces
             .filter(place => place.latitude != null && place.longitude != null)
-            .slice(0, 20)
+            .slice(0, 200)
             .map(place => (
               <Marker key={place.id} position={[place.latitude, place.longitude]}>
                 <Popup minWidth={220} maxWidth={260} className="map-popup-leaflet">
@@ -855,8 +858,8 @@ const HomePage: FC = () => {
                   <div className="distance-slider-wrapper">
                     <input
                       type="range"
-                      min={1}
-                      max={50}
+                      min={2}
+                      max={100}
                       step={1}
                       value={maxDistance}
                       onChange={(e) => setMaxDistance(Number(e.target.value))}

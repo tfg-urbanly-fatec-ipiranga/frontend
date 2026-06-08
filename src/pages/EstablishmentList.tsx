@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type FC } from 'react';
-import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus, MessageSquare } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowLeft, Heart, User, Menu, Plus, MessageSquare, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlaces } from '../hooks/usePlaces';
 import { useFavorites } from '../hooks/useFavorites';
@@ -9,7 +9,34 @@ import { useTags } from '../hooks/useTags';
 import type { Place } from '../types/place';
 import './EstablishmentList.css';
 import BottomNav from '../components/BottomNav';
+import api from '../services/api';
+import { toast } from 'react-toastify';
 import React from 'react';
+
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+
+  const R = 6371;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+};
 
 const getPriceLabel = (level?: string) => {
   switch (level) {
@@ -21,6 +48,22 @@ const getPriceLabel = (level?: string) => {
     default: return '';
   }
 };
+
+const priceOptions = [
+  { label: '$', value: 'ONE' },
+  { label: '$$', value: 'TWO' },
+  { label: '$$$', value: 'THREE' },
+  { label: '$$$$', value: 'FOUR' },
+  { label: '$$$$$', value: 'FIVE' },
+];
+
+const ratingOptions = [
+  { label: 'Sem avaliação', value: 'none' },
+  { label: '1+', value: '1-2' },
+  { label: '2+', value: '2-3' },
+  { label: '3+', value: '3-4' },
+  { label: '4+', value: '4-5' },
+];
 
 const EstablishmentListPage: FC = () => {
   const navigate = useNavigate();
@@ -37,18 +80,32 @@ const EstablishmentListPage: FC = () => {
   const { tags, loading: tagsLoading } = useTags();
   const storedUser = localStorage.getItem("user");
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const parsedUser = React.useMemo(() => {
-  try {
-    if (!storedUser) return null;
 
-    const parsed = JSON.parse(storedUser);
-    return parsed.user ?? parsed;
-  } catch {
-    return null;
-  }
+  // Estados adicionados para busca e filtros avançados
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchPlaces, setSearchPlaces] = useState<Place[]>([]);
+  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
+  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
+  const [maxDistance, setMaxDistance] = useState(25);
+  const [isClearFlashing, setIsClearFlashing] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const parsedUser = React.useMemo(() => {
+    try {
+      if (!storedUser) return null;
+
+      const parsed = JSON.parse(storedUser);
+      return parsed.user ?? parsed;
+    } catch {
+      return null;
+    }
   }, [storedUser]);
   const isAdmin = parsedUser?.role === 'ADMIN';
-
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return "";
@@ -57,23 +114,248 @@ const EstablishmentListPage: FC = () => {
     return firstInitial + lastInitial;
   };
 
+  // Busca por nome com debounce de 500ms
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-  // Usa os places vindos do router state (busca da home) ou os buscados da API
+    if (!searchTerm.trim()) {
+      setSearchPlaces([]);
+      setFilterOpen(false);
+      setSelectedCities([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await api.get<Place[]>('/places/vibe-search', {
+          params: { q: searchTerm.trim() },
+        });
+        setSearchPlaces(res.data);
+        if (!res.data || res.data.length === 0) {
+          toast.warn("Nenhum local atende a busca solicitada!");
+        }
+      } catch {
+        toast.error("Erro ao fazer busca!");
+        setSearchPlaces([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchTerm]);
+
   const allPlaces = statePlaces ?? fetchedPlaces;
 
-  // Filtra por chips ativos; se nenhum selecionado, exibe todos
-  const places = activeChips.length === 0
-    ? allPlaces
-    : allPlaces?.filter(place =>
-        place.placeTags?.some(pt => activeChips.includes(pt.tag.name))
+  // Lógica combinada de filterBasePlaces
+  const filterBasePlaces = React.useMemo(() => {
+    const hasSearch = searchTerm.trim().length > 0;
+    const hasChips = activeChips.length > 0;
+
+    if (hasSearch && hasChips) {
+      const chipIds = new Set(filteredPlaces.map(p => p.id));
+      return searchPlaces.filter(p => chipIds.has(p.id));
+    }
+
+    if (hasSearch) {
+      return searchPlaces;
+    }
+
+    if (hasChips) {
+      return filteredPlaces;
+    }
+
+    return allPlaces || [];
+  }, [
+    searchTerm,
+    activeChips,
+    filteredPlaces,
+    searchPlaces,
+    allPlaces
+  ]);
+
+  const availableCities = React.useMemo(
+    () =>
+      [...new Set(
+        filterBasePlaces
+          .map(p => p.city)
+          .filter((c): c is string => Boolean(c))
+      )],
+    [filterBasePlaces]
+  );
+
+  const availableCategories = React.useMemo(
+    () =>
+      [...new Set(
+        filterBasePlaces
+          .map(p => p.category?.name)
+          .filter((c): c is string => Boolean(c))
+      )],
+    [filterBasePlaces]
+  );
+
+  const availablePrices = React.useMemo(() => {
+    if (!filterBasePlaces.length) return [];
+
+    return priceOptions.filter(option =>
+      filterBasePlaces.some(
+        place => place.priceLevel === option.value
+      )
+    );
+  }, [filterBasePlaces]);
+
+  const availableRatings = React.useMemo(() => {
+    if (!filterBasePlaces.length) return [];
+
+    return ratingOptions.filter(option => {
+      return filterBasePlaces.some(place => {
+        const r = place.avgRating;
+
+        switch (option.value) {
+          case 'none':
+            return r == null;
+
+          case '1-2':
+            return r != null && r >= 1 && r < 2;
+
+          case '2-3':
+            return r != null && r >= 2 && r < 3;
+
+          case '3-4':
+            return r != null && r >= 3 && r < 4;
+
+          case '4-5':
+            return r != null && r >= 4 && r <= 5;
+
+          default:
+            return false;
+        }
+      });
+    });
+  }, [filterBasePlaces]);
+
+  // Lógica combinada final dos locais exibidos
+  const places = React.useMemo(() => {
+    let result = filterBasePlaces;
+
+    if (selectedCities.length > 0) {
+      result = result.filter(p => p.city && selectedCities.includes(p.city));
+    }
+
+    if (selectedCategories.length > 0) {
+      result = result.filter(p => p.category?.name && selectedCategories.includes(p.category.name));
+    }
+
+    if (selectedRatings.length > 0) {
+      result = result.filter(place => {
+        const r = place.avgRating;
+
+        return selectedRatings.some(range => {
+          switch (range) {
+            case 'none':
+              return r == null;
+
+            case '1-2':
+              return r != null && r >= 1 && r < 2;
+
+            case '2-3':
+              return r != null && r >= 2 && r < 3;
+
+            case '3-4':
+              return r != null && r >= 3 && r < 4;
+
+            case '4-5':
+              return r != null && r >= 4 && r <= 5;
+
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    if (userLocation) {
+      result = result.filter(place => {
+        const distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          place.latitude,
+          place.longitude
+        );
+
+        return distance <= maxDistance;
+      });
+    }
+
+    if (selectedPrices.length > 0) {
+      result = result.filter(place =>
+        place.priceLevel &&
+        selectedPrices.includes(place.priceLevel)
       );
+    }
 
+    return result;
+  }, [
+    filterBasePlaces,
+    selectedCities,
+    selectedCategories,
+    selectedRatings,
+    selectedPrices,
+    userLocation,
+    maxDistance
+  ]);
 
-  const toggleChip = (chip: string) => {
-    if (activeChips.includes(chip)) {
-      setActiveChips(activeChips.filter((c: string) => c !== chip));
+  const clearFilters = () => {
+    setActiveChips([]);
+    setFilteredPlaces([]);
+  };
+
+  const handleClearClick = () => {
+    setIsClearFlashing(true);
+    setTimeout(() => {
+      clearFilters();
+      setIsClearFlashing(false);
+    }, 350);
+  };
+
+  const toggleChip = async (tagName: string) => {
+    const isActive = activeChips.includes(tagName);
+    const newActive = isActive
+      ? activeChips.filter(c => c !== tagName)
+      : [...activeChips, tagName];
+
+    setActiveChips(newActive);
+
+    if (!isActive) {
+      try {
+        const res = await api.get<Place[]>('/places/findByTag', { params: { tag: tagName } });
+        setFilteredPlaces(prev => {
+          const ids = new Set(prev.map(p => p.id));
+          return [...prev, ...res.data.filter(p => !ids.has(p.id))];
+        });
+      } catch (err: any) {
+        // silent
+      }
     } else {
-      setActiveChips([...activeChips, chip]);
+      if (newActive.length === 0) {
+        setFilteredPlaces([]);
+      } else {
+        try {
+          const results = await Promise.all(
+            newActive.map(t => api.get<Place[]>('/places/findByTag', { params: { tag: t } }))
+          );
+          const allRes = results.flatMap(r => r.data);
+          const unique = Array.from(new Map(allRes.map(p => [p.id, p])).values());
+          setFilteredPlaces(unique);
+        } catch (err: any) {
+          // silent
+        }
+      }
     }
   };
 
@@ -88,31 +370,6 @@ const EstablishmentListPage: FC = () => {
     const firstPhoto = place.photos?.[0];
 
     return primaryPhoto?.url || firstPhoto?.url || fallbackImage;
-  };
-
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
-    const toRad = (value: number) => (value * Math.PI) / 180;
-
-    const R = 6371;
-
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
   };
 
   type TagStyle = {
@@ -338,17 +595,203 @@ const EstablishmentListPage: FC = () => {
       <section className="list-controls">
         <div style={{ display: 'flex', gap: '12px' }}>
           <div className="search-bar-container" style={{ flex: 1 }}>
-            <input type="text" placeholder="Buscar locais..." className="search-input" />
             <Search size={20} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar locais..."
+              className="search-input"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-          <button className="filter-button">
-            <SlidersHorizontal size={20} />
+          <button
+            disabled={isSearching}
+            className={`filter-button${filterOpen ? ' filter-button--active' : ''}`}
+            onClick={() => {
+              if (!isSearching) {
+                setFilterOpen(o => !o);
+              }
+            }}
+            title="Filtros avançados"
+          >
+            {isSearching ? (
+              <div className="spinner" />
+            ) : (
+              <SlidersHorizontal size={20} />
+            )}
           </button>
         </div>
-        
+
+        {filterOpen && !isSearching && (
+          <div className="filter-panel">
+            <div className="filter-panel-header">
+              <span className="filter-panel-title">Filtros Avançados</span>
+              <button className="filter-panel-close" onClick={() => setFilterOpen(false)}>✕</button>
+            </div>
+
+            {availableCities.length > 0 && (
+              <div className="filter-section">
+                <div className="filter-section-title">Cidade</div>
+                <div className="filter-options">
+                  {availableCities.map(city => (
+                    <label key={city} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedCities.includes(city)}
+                        onChange={() =>
+                          setSelectedCities(prev =>
+                            prev.includes(city)
+                              ? prev.filter(c => c !== city)
+                              : [...prev, city]
+                          )
+                        }
+                      />
+                      <span>{city}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {availableCategories.length > 0 && (
+              <div className="filter-section">
+                <div className="filter-section-title">Categoria</div>
+                <div className="filter-options">
+                  {availableCategories.map(category => (
+                    <label key={category} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category)}
+                        onChange={() =>
+                          setSelectedCategories(prev =>
+                            prev.includes(category)
+                              ? prev.filter(c => c !== category)
+                              : [...prev, category]
+                          )
+                        }
+                      />
+                      <span>{category}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {availableRatings.length > 0 && (
+              <div className="filter-section">
+                <div className="filter-section-title">Avaliação</div>
+                <div className="filter-options">
+                  {availableRatings.map(option => (
+                    <label key={option.value} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedRatings.includes(option.value)}
+                        onChange={() =>
+                          setSelectedRatings(prev =>
+                            prev.includes(option.value)
+                              ? prev.filter(v => v !== option.value)
+                              : [...prev, option.value]
+                          )
+                        }
+                      />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ color: '#FBBF24' }}>★</span>
+                        <span>{option.label}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {availablePrices.length > 0 && (
+              <div className="filter-section">
+                <div className="filter-section-title">Preço médio</div>
+                <div className="filter-options">
+                  {availablePrices.map(option => (
+                    <label key={option.value} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedPrices.includes(option.value)}
+                        onChange={() =>
+                          setSelectedPrices(prev =>
+                            prev.includes(option.value)
+                              ? prev.filter(v => v !== option.value)
+                              : [...prev, option.value]
+                          )
+                        }
+                      />
+                      <span style={{ fontWeight: 700, letterSpacing: '0.5px', color: '#15803D' }}>
+                        {option.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {userLocation && (
+              <div className="filter-section">
+                <div className="filter-section-title">Distância máxima</div>
+                <div className="distance-slider-wrapper">
+                  <input
+                    type="range"
+                    min={2}
+                    max={100}
+                    step={1}
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(Number(e.target.value))}
+                    className="distance-slider"
+                  />
+                  <div className="distance-slider-value">
+                    Até {maxDistance} KM
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {availableCities.length === 0 && availableCategories.length === 0 && availableRatings.length === 0 && availablePrices.length === 0 && (
+              <p className="filter-empty">
+                Nenhum filtro disponível para esses resultados.
+              </p>
+            )}
+
+            <div className="filter-actions">
+              <button
+                className="filter-btn-clear"
+                onClick={() => {
+                  setSelectedCities([]);
+                  setSelectedCategories([]);
+                  setSelectedRatings([]);
+                  setSelectedPrices([]);
+                }}
+              >
+                Limpar
+              </button>
+              <button
+                className="filter-btn-apply"
+                onClick={() => setFilterOpen(false)}
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="chips-scroll">
-          {tagsLoading && <span style={{ fontSize: '13px', color: '#9CA3AF', padding: '6px 0' }}>Carregando tags...</span>}
-            {tags.map(tag => {
+          {activeChips.length > 0 && (
+            <button
+              className={`chip-clear-btn${isClearFlashing ? ' flashing' : ''}`}
+              onClick={handleClearClick}
+              title="Limpar filtros"
+            >
+              ✕
+            </button>
+          )}
+          {tagsLoading ? (
+            <span style={{ fontSize: '13px', color: '#9CA3AF', padding: '6px 0' }}>Carregando tags...</span>
+          ) : (
+            tags.map(tag => {
               const colors = tagColors[tag.name] || {
                 bg: '#F3F4F6',
                 color: '#374151'
@@ -361,16 +804,21 @@ const EstablishmentListPage: FC = () => {
                   key={tag.id}
                   className={`chip ${isActive ? 'active' : ''}`}
                   onClick={() => toggleChip(tag.name)}
-                  style={{
-                    backgroundColor: isActive ? '#EB6B3D' : colors.bg,
-                    color: isActive ? '#FFFFFF' : colors.color,
-                    border: 'none'
-                  }}
+                  style={
+                    !isActive
+                      ? {
+                          backgroundColor: colors.bg,
+                          color: colors.color,
+                          border: 'none'
+                        }
+                      : { border: 'none' }
+                  }
                 >
                   {tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}
                 </div>
               );
-            })}
+            })
+          )}
         </div>
       </section>
 
@@ -382,6 +830,11 @@ const EstablishmentListPage: FC = () => {
         )}
         {!statePlaces && loading && <div style={{ textAlign: 'center', padding: '20px' }}>Carregando estabelecimentos...</div>}
         {!statePlaces && error && <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Erro ao buscar locais: {error}</div>}
+        {places && places.length === 0 && !loading && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6B7280', fontSize: '15px' }}>
+            Nenhum resultado encontrado para a sua busca ou filtros.
+          </div>
+        )}
         {places && places.map(place => (
           <div key={place.id} className="establishment-card" onClick={() => navigate(`/establishment/${place.id}`)}>
             
